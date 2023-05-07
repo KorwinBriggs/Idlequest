@@ -19,7 +19,6 @@ import numpy as np
 import pandas as pd
 import argparse
 from character import character
-from life import life
 
 parser = argparse.ArgumentParser(
     prog='program name',
@@ -34,11 +33,10 @@ args = parser.parse_args()
 mode = args.mode
 
 
-
-def create_character():
+def create_character(**args):
     if mode == 'cli':
         return __create_character_cli()
-    if mode == 'web':
+    elif mode == 'web':
         return __create_character_web()
 
 def __create_character_cli():
@@ -86,14 +84,15 @@ def __create_character_cli():
 
     return character(name, sex, setting)
 
-def __create_character_web():
+def __create_character_web(**args):
     # Like create_character_cli, but sends and returns json instead of cli prompts
     0
+
 
 def get_game_length():
     if mode == 'cli':
         return __get_game_length_cli()
-    if mode == 'web':
+    elif mode == 'web':
         return __get_game_length_web()
     
 def __get_game_length_cli():
@@ -119,12 +118,22 @@ def __get_game_length_cli():
 def __get_game_length_web():
     0
 
-def character_description(character):
+
+def get_character_description(character):
+    if mode == 'cli':
+        return __get_character_description_cli(character)
+    elif mode == 'web':
+        return __get_character_description_web(character)
+    
+def __get_character_description_cli(character):
 
     description = (f"{character.name} is {character.age} years old."
           + f"\n{character.sub.capitalize()} has {character.appearanceToString()}."
     )
     return description
+
+def __get_character_description_web(character):
+    0
 
 # def __get_kid_settings():
 #     db_kid_settings = pd.read_sql_query("SELECT setting FROM careers WHERE kid = 'true'", db)
@@ -132,20 +141,72 @@ def character_description(character):
 #     return kid_settings
 
 
+
+
+def event(character):
+    if mode == 'cli':
+        return __event_cli(character)
+    elif mode == 'web':
+        return __event_web(character)
+
+def __event_cli(character):
+    
+    # get list of possible event ids
+    db_events_query = f"SELECT DISTINCT event_id FROM event_prereqs WHERE "
+    db_events_query += f"setting_id = '{character.setting}' "
+    db_events_query += f"OR career_id = '{character.career}' "
+    for trait in character.traits:
+        db_events_query += f"OR trait_id = '{trait}' "
+
+    db_possible_events = pd.read_sql_query(db_events_query, db)
+    possible_events = db_possible_events.values.tolist()
+
+    # choose one -- might also be in character
+    
+
+    # run it
+    # change character based on that event (including adding 1 to age)
+
+def __event_web(character):
+    0
+
+
+def decision(character):
+    0
+    # logic for calling and resolving decisions
+    # each should increase age by 1
+    # 
+    # get list of possible decisions based on character setting, and choose one
+    # get default options
+    # get list of possible other options, based on character career/skills/traits/etc
+    # choose one or two of these
+    # present all as options
+
+    # player picks one. push changes to character. keep new career option new list
+    # get list of possible next careers based on character setting, and add a few of them to the list
+    # present list of career choices
+    # player picks one
+    # push change to character
+    # end decision
+
+
 # write and read are helper functions.
 # they write and read to cli or webhooks, depending on the program's mode
 def write(message):
     if mode == 'cli':
         print('\n' + message)
-    if mode == 'web':
+    elif mode == 'web':
         0
 
 def read(message):
     if mode == 'cli':
         return input('\n' + message + ' ')
-    if mode == 'web':
+    elif mode == 'web':
         0
     
+def end_game():
+    write("Game Shutting Down...")
+    return False
 
 
 # ---------------- GAME START ---------------- #
@@ -166,13 +227,14 @@ if __name__ == "__main__":
 
 # ---------------- CHARACTER CREATION ---------------- #
 
-        player = create_character()
+        main_character = create_character()
+        event(main_character)
 
 # ---------------- CLOCK START ---------------- #
 
         game_length = get_game_length()
 
-        write(character_description(player))
+        write(get_character_description(main_character))
 
         interval = 60 # 1 minute
         elapsed = 0
@@ -188,8 +250,7 @@ if __name__ == "__main__":
 
 # ---------------- CALLING EVENTS ---------------- #
 
-
+            
 
 # ---------------- GAME END ---------------- #
-        write("Game Shutting Down...")
-        gameRunning = False
+        game_running = end_game()

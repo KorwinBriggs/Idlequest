@@ -68,16 +68,8 @@ class character:
         
     def removePosession(posessionid):
         0
-        
+
     def add_career(careerid):
-        0
-
-    
-    def event(self):
-        0
-        # logic for calling and resolving events
-
-    def decision(self):
         0
 
     def __character_creation_appearance(self, num_appearances):
