@@ -1,0 +1,4 @@
+id,event_id,skill_id,trait_id,setting_id,career_id
+1,peasant_bully,,,peasant,
+2,peasant_bully,farming,,,
+3,peasant_bully,,,,

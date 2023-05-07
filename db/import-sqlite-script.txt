@@ -1,0 +1,138 @@
+
+PRAGMA foreign_keys = ON;
+
+
+
+DROP TABLE IF EXISTS event_prereqs;
+DROP TABLE IF EXISTS skill_relations;
+DROP TABLE IF EXISTS appearance_skills;
+DROP TABLE IF EXISTS posession_skills;
+DROP TABLE IF EXISTS trait_skills;
+
+DROP TABLE IF EXISTS skills;
+DROP TABLE IF EXISTS appearance;
+DROP TABLE IF EXISTS traits;
+DROP TABLE IF EXISTS posessions;
+DROP TABLE IF EXISTS settings;
+DROP TABLE IF EXISTS careers;
+DROP TABLE IF EXISTS events;
+
+
+CREATE TABLE skills(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL, 
+   category TEXT,
+   description TEXT
+);
+
+CREATE TABLE skill_relations(
+   skill1 TEXT NOT NULL,
+   skill2 TEXT NOT NULL,
+   modifier INTEGER NOT NULL,
+   FOREIGN KEY(skill1) REFERENCES skills(id),
+   FOREIGN KEY(skill2) REFERENCES skills(id)
+);
+
+CREATE TABLE appearance(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   category TEXT NOT NULL,
+   aging INTEGER NOT NULL,
+   scar INTEGER NOT NULL,
+   description TEXT
+);
+
+CREATE TABLE appearance_skills(
+   appearance TEXT NOT NULL,
+   skill TEXT NOT NULL,
+   modifier INTEGER NOT NULL,
+   FOREIGN KEY(appearance) REFERENCES appearance(id),
+   FOREIGN KEY(skill) REFERENCES skills(id)
+);
+
+CREATE TABLE traits(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   category TEXT NOT NULL,
+   description TEXT,
+   age INTEGER NOT NULL,
+   scar INTEGER NOT NULL
+);
+
+CREATE TABLE trait_skills(
+   trait TEXT NOT NULL,
+   skill TEXT NOT NULL,
+   modifier INTEGER NOT NULL,
+   FOREIGN KEY(trait) REFERENCES traits(id),
+   FOREIGN KEY(skill) REFERENCES skills(id)
+);
+
+CREATE TABLE posessions(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   category TEXT NOT NULL,
+   description TEXT
+);
+
+CREATE TABLE posession_skills(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   modifier INTEGER NOT NULL
+);
+
+CREATE TABLE settings(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL
+);
+
+CREATE TABLE careers(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   setting TEXT NOT NULL,
+   description TEXT,
+   kid INTEGER NOT NULL,
+   magic INTEGER NOT NULL,
+   guild INTEGER NOT NULL,
+   outcast INTEGER NOT NULL
+);
+
+CREATE TABLE events(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   test_skill TEXT NOT NULL,
+   success_mod INTEGER,
+   failure_mod INTEGER,
+   success_description TEXT,
+   failure_description TEXT,
+   success_reward TEXT,
+   failure_reward TEXT,
+   FOREIGN KEY(test_skill) REFERENCES skills(id)
+);
+
+CREATE TABLE event_prereqs(
+   prereq_id INTEGER PRIMARY KEY,
+   event_id TEXT NULL,
+   skill_id TEXT NULL,
+   trait_id TEXT NULL,
+   setting_id TEXT NULL,
+   career_id TEXT NULL
+);
+
+
+.mode csv
+
+.import --skip 1 "idlegamedata/skills.csv" skills
+.import --skip 1 "idlegamedata/skill_relations.csv" skill_relations
+.import --skip 1 "idlegamedata/appearance.csv" appearance
+.import --skip 1 "idlegamedata/appearance_skills.csv" appearance_skills
+.import --skip 1 "idlegamedata/traits.csv" traits
+.import --skip 1 "idlegamedata/trait_skills.csv" traits
+.import --skip 1 "idlegamedata/posessions.csv" posessions
+.import --skip 1 "idlegamedata/posession_skills.csv" posession_skills
+.import --skip 1 "idlegamedata/settings.csv" settings
+.import --skip 1 "idlegamedata/careers.csv" careers
+.import --skip 1 "idlegamedata/events.csv" events
+.import --skip 1 "idlegamedata/event_prereqs.csv" event_prereqs
+
+
+.quit
