@@ -37,9 +37,9 @@ CREATE TABLE appearance(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
    category TEXT NOT NULL,
+   description TEXT
    aging INTEGER NOT NULL,
    scar INTEGER NOT NULL,
-   description TEXT
 );
 
 CREATE TABLE appearance_skills(
@@ -89,6 +89,7 @@ CREATE TABLE careers(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
    setting TEXT NOT NULL,
+   years INTEGER NOT NULL,
    description TEXT,
    kid INTEGER NOT NULL,
    magic INTEGER NOT NULL,
@@ -99,14 +100,14 @@ CREATE TABLE careers(
 CREATE TABLE events(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
-   test_skill TEXT NOT NULL,
-   success_mod INTEGER,
-   failure_mod INTEGER,
+   prereq TEXT NOT NULL,
+   test_skill_id TEXT,
+   difficulty INT NOT NULL
+   setup TEXT NOT NULL,
    success_description TEXT,
+   success_effect TEXT,
    failure_description TEXT,
-   success_reward TEXT,
-   failure_reward TEXT,
-   FOREIGN KEY(test_skill) REFERENCES skills(id)
+   failure_effect TEXT,
 );
 
 CREATE TABLE event_prereqs(

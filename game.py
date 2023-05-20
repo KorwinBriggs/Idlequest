@@ -135,15 +135,13 @@ def __get_character_description_cli(character):
 def __get_character_description_web(character):
     0
 
-# def __get_kid_settings():
-#     db_kid_settings = pd.read_sql_query("SELECT setting FROM careers WHERE kid = 'true'", db)
-#     kid_settings = db_kid_settings['setting'].values.tolist()
-#     return kid_settings
-
 
 
 
 def event(character):
+
+
+
     if mode == 'cli':
         return __event_cli(character)
     elif mode == 'web':
@@ -152,17 +150,15 @@ def event(character):
 def __event_cli(character):
     
     # get list of possible event ids
-    db_events_query = f"SELECT DISTINCT event_id FROM event_prereqs WHERE "
-    db_events_query += f"setting_id = '{character.setting}' "
-    db_events_query += f"OR career_id = '{character.career}' "
-    for trait in character.traits:
-        db_events_query += f"OR trait_id = '{trait}' "
+    db_events_query = f"SELECT * FROM events WHERE "
+    db_events_query += f"prereq = 'setting:{character.setting}' "
+    db_events_query += f"OR prereq = 'career:{character.career}' "
 
     db_possible_events = pd.read_sql_query(db_events_query, db)
     possible_events = db_possible_events.values.tolist()
 
     # choose one -- might also be in character
-    
+    event_choice = random.choice(possible_events)
 
     # run it
     # change character based on that event (including adding 1 to age)

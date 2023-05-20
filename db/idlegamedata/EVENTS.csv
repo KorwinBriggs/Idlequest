@@ -1,33 +1,19 @@
-id,name,test_skill_id,success_mod,failure_mod,success_description,failure_description,success_reward,failure_reward
-peasant_bully,peasant kid bully,farming,,,{name} has {possessive} butt kicked by a bully,,,
-important harvest,important harvest,farming,,,,,,
-unusual weather,unusual weather,farming,,,,,,
-sickness,sickness,farming,,,,,,
-bad sickness,bad sickness,farming,,,,,,
-barn construction,barn construction,farming,,,,,,
-hunting trip,hunting trip,farming,,,,,,
-taxes due,taxes due,farming,,,,,,
-family birth,family birth,farming,,,,,,
-family death,family death,farming,,,,,,
-traveling peddler,traveling peddler,farming,,,,,,
-traveling storyteller,traveling storyteller,farming,,,,,,
-milking cows,milking cows,farming,,,,,,
-collecting eggs,collecting eggs,farming,,,,,,
-plowing field,plowing field,farming,,,,,,
-herding sheep,herding sheep,farming,,,,,,
-milking goats,milking goats,farming,,,,,,
-bad winter,bad winter,farming,,,,,,
-early frost,early frost,farming,,,,,,
-harvest,harvest,farming,,,,,,
-milling,milling,farming,,,,,,
-grain negotiation,grain negotiation,farming,,,,,,
-land dispute,land dispute,farming,,,,,,
-local faire,local faire,farming,,,,,,
-traveling adventurer,traveling adventurer,farming,,,,,,
-traveling knight,traveling knight,farming,,,,,,
-traveling wizard,traveling wizard,farming,,,,,,
-feast,feast,farming,,,,,,
-famine,famine,farming,,,,,,
-animal plague,animal plague,farming,,,,,,
-crop blight,crop blight,farming,,,,,,
-crop hybrid,crop hybrid,farming,,,,,,
+id,name,prereq,test_skill_id,difficulty,setup,success_description,success_effect,failure_description,failure_effect
+peasant_kid_first_plant,First Plant,career:peasant_kid,,6,{Name}'s parents show {obj} how to plant a seed in the garden.,"Over the next few months, they water it and care for it, nurturing it as it grows. {name} finds that {sub} enjoys gardening.","addAll(trait:green_thumb), addOne(skill:farming, skill:patience, skill:plants_and_herbs)","Over the next few months, they water it and care for it, but {name} quickly loses interest.","addOne(skill:wanderlust, skill:laziness), loseOne(skill:farming)"
+peasant_kid_first_animal,First Animal,career:peasant_kid,,6,{Name} is given {pos} very own chick to raise.,"{Sub} treats her with love and care, and within a few months it's grown into a strong, healthy chicken. {name} discovers that {sub} does well with animals.","addAll(trait: great_with_animals), addOne(skill:herding, skill:animal_handling, skill:empathy)","It's a relationship with more pecks than pets, and it only takes a few months until {name} decides {sub} is not an animal person.","addOne(skill:wanderlust, skill:laziness), loseOne(skill:animal_handling)"
+peasant_kid_bully,,career:peasant_kid,,6,"A local kid has taken to bullying {name}, and {sub} has decided to do something about it.","{Sub} confronts the bully head-on, and while the bully doesn't stop bullying, {sub} at least moves on to other targets.","addOne(trait:silver_tongue, trait:aggressive), addOne(skill:steel, skill:intimidation)","Unfortunately for {name}, confronting the bully backfires, and {sub} makes {name}'s next few years miserable.","addOne(trait:grudge_holder, trait:brooding), addOne(skill:toughness, skill:stealth)"
+peasant_kid_exploring,,career:peasant_kid,,6,"While playing in the woods, {name} realizes {sub} is lost.","It's not easy, but through luck, cleverness, and avoiding panic, {sub} manages to find {pos} way out before anyone notices {sub}'s gone.","addOne(trait:home_in_the_wilds, trait: fearless), addOne(skill:direction_sense, skill:focus, skill:tracking)","{Sub} wanders for hours, in a state of near-panic, until {sub} happens upon a path {sub} recognizes and finally makes it home.","addOne(trait:poor_sense_of_direction, trait:prone_to_panic), loseOne(skill:focus, skill:direction_sense, skill:steel)"
+peasant_kid_chores,,career:peasant_kid,,6,"Running a peasant household is hard work, and every year, {name} is given more chores.","{Name} does {pos} parents proud, helping in any way {sub} can.","addOne(trait:dutiful, trait:humble, trait:honorable), addAll(skill:random_agriculture, skill:endurance)",{Name} spends less time working than on figuring out how to avoid it.,"addOne(trait:slippery, trait:lazy, trait:rogueish), addOne(skill:laziness, skill:wanderlust, skill:humor, skill:stealth"
+peasant_kid_church,,career:peasant_kid,,6,"Once a week, {name}'s family worships at the local temple.","{Name} finds beauty in the songs, and solace in the rituals. {Sub} looks forward to it every week.","addOne(trait:faithful, trait:traditional, trait:devout), addOne(skill:piety, skill:ritual, skill:consoling)","{Name} finds it painfully boring, and does {pos} best to get out of going.","addOne(trait:cynical, trait:free_thinker), loseAll(skill:piety)"
+peasant_kid_school,,career:peasant_kid,,6,"Each winter, a local woman turns her home into a makeshift schoolhouse, teaching local children to read and write.","{Name} takes to it quickly, impressing {pos} teacher and developing a deep love for books. ","addAll(trait:literate, skill:reading), addOne(skill:writing, skill:mathematics)","{Name} finds it awfully dull, and soon stops attending altogether.","loseAll(skill:reading, skill:writing, skill:mathematics)"
+peasant_kid_peddler,,career:peasant_kid,,6,"A travelling peddler stops to trade, and {name} spies a wonderful toy amongst his wares.","{Name} proves a surprisingly shrewd haggler, ",,,
+peasant_kid_farming,,career:peasant_kid,,0,"{Name} helps {pos} parents in the fields, learning to till, plant, and harvest.",,addAll(skill:farming),,
+peasant_kid_herding,,career:peasant_kid,,0,"{Name} spends {pos} mornings tending to the livestock, keeping them healthy and fed.",,addAll(skill:herding),,
+peasant_kid_woodcutting,,career:peasant_kid,,0,{Name} spends weeks cutting firewood for the winter.,,addAll(skill:wood_cutting),,
+peasant_kid_foraging,,career:peasant_kid,,0,"{Name} learns to forage, collecting fruits, seeds, and mushrooms from the woods.",,addAll(skill:foraging),,
+peasant_kid_trapping,,career:peasant_kid,,0,{Name} learns to make traps and snares to catch small animals.,,addAll(skill:trapping),,
+peasant_kid_hunting,,career:peasant_kid,,0,{Name} accompanies {pos} dad on a successful hunting trip.,,addAll(skill:hunting),,
+peasant_kid_weather_sense,,career:peasant_kid,,0,{name} finds that {sub} can feel when it's going to rain.,,addAll(skill:weather_sense),,
+peasant_kid_mending,,career:peasant_kid,,0,{Name} spends {pos} evenings mending old clothes and tools,,addAll(skill:mending),,
+peasant_patience,,setting:peasant,,0,"A peasant's work involves a lot of dudgery, and {name} learns the value of patience.",,addAll(skill:patience),,
+peasant_toughness,,setting:peasant,,0,"Hard, honest work makes for hard, honest people.",,addAll(skill:toughness),,

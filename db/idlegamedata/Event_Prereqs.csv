@@ -1,4 +1,13 @@
-id,event_id,skill_id,trait_id,setting_id,career_id
-1,peasant_bully,,,peasant,
-2,peasant_bully,farming,,,
-3,peasant_bully,,,,
+id,event_id,career_id,setting_id,trait_id
+1,peasant_kid_bully,kid_peasant,,
+2,peasant_kid_secret_spot,kid_peasant,,
+3,peasant_kid_first_plant,,,
+,peasant_kid_first_animal,,,
+,peasant_kid_play_fight,,,
+,peasant_kid_play_games,,,
+,peasant_kid_play_trade,,,
+,peasant_kid_play_art,,,
+,peasant_kid_learn_farm,,,
+,peasant_kid_learn_animals,,,
+,peasant_kid_steal,,,
+,peasant_kid_learn_build,,,

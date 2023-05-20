@@ -11,162 +11,168 @@ quick_study,quick study,mental,,false,false
 great_with_animals,great with animals,social,,false,false
 nose_like_a_bloodhound,nose like a bloodhound,sensory,,false,false
 strategic_mind,strategic mind,mental,,false,false
-artful dodger,artful dodger,physical,,false,false
-pillar of the community,pillar of the community,political,,false,false
-renowned artisan,renowned artisan,trade,,false,false
-silver tongue,silver tongue,social,,false,false
-power behind the throne,power behind the throne,political,,false,false
-war hero,war hero,military,,false,false
+artful_dodger,artful dodger,physical,,false,false
+pillar_of_the_community,pillar of the community,political,,false,false
+renowned_artisan,renowned artisan,trade,,false,false
+silver_tongue,silver tongue,social,,false,false
+power_behind_the_throne,power behind the throne,political,,false,false
+war_hero,war hero,military,,false,false
 Spartacus,Spartacus,political,,false,false
-perfect pitch,perfect pitch,sensory,,false,false
-chosen by the gods,chosen by the gods,religious,,false,false
+perfect_pitch,perfect pitch,sensory,,false,false
+chosen_by_the_gods,chosen by the gods,religious,,false,false
 limber,limber,physical,,false,false
 strong,strong,physical,,false,false
 tough,tough,physical,,false,false
 fearless,fearless,mental,,false,false
-hands of iron,hands of iron,physical,,false,false
-lead stomach,lead stomach,physical,,false,false
-iron will,iron will,mental,,false,false
+hands_of_iron,hands of iron,physical,,false,false
+lead_stomach,lead stomach,physical,,false,false
+iron_will,iron will,mental,,false,false
 shrewd,shrewd,mental,,false,false
-resigned to death,resigned to death,mental,,true,true
-like mom used to make,like mom used to make,trade,,false,false
+resigned_to_death,resigned to death,mental,,true,true
+like_mom_used_to_make,like mom used to make,trade,,false,false
 hardened,hardened,mental,,false,false
 calloused,calloused,physical,,false,false
-mind over matter,mind over matter,mental,,false,false
-first through the breach,first through the breach,military,,false,false
-esoteric studies,esoteric studies,academic,,false,false
-quick witted,quick witted,social,,false,false
-well travelled,well travelled,trade,,false,false
-mind for business,mind for business,mercantile,,false,false
-memory like a steel trap,memory like a steel trap,mental,,false,false
+mind_over_matter,mind over matter,mental,,false,false
+first_through_the_breach,first through the breach,military,,false,false
+esoteric_studies,esoteric studies,academic,,false,false
+quick_witted,quick witted,social,,false,false
+well_travelled,well travelled,trade,,false,false
+mind_for_business,mind for business,mercantile,,false,false
+memory_like_a_steel_trap,memory like a steel trap,mental,,false,false
 charming,charming,social,,false,false
 well-connected,well-connected,political,,false,false
 meticulous,meticulous,personality,,false,false
-human almanac,human almanac,mental,,false,false
-grizzled veteran,grizzled veteran,military,,false,false
-well educated,well educated,academic,,false,false
+human_almanac,human almanac,mental,,false,false
+grizzled_veteran,grizzled veteran,military,,false,false
+well_educated,well educated,academic,,false,false
 organized,organized,personality,,false,false
 unflappable,unflappable,personality,,false,false
 relaxed,relaxed,personality,,false,false
 graceful,graceful,physical,,false,false
 refined,refined,personality,,false,false
 jolly,jolly,personality,,false,false
-born leader,born leader,personality,,false,false
-their grace,their grace,political,,false,false
-their majesty,their majesty,political,,false,false
-their eminence,their eminence,political,,false,false
+born_leader,born leader,personality,,false,false
+their_grace,their grace,political,,false,false
+their_majesty,their majesty,political,,false,false
+their_eminence,their eminence,political,,false,false
 uncorruptable,uncorruptable,personality,,false,false
 honorable,honorable,personality,,false,false
-uncomfortably honest,uncomfortably honest,personality,,false,false
+uncomfortably_honest,uncomfortably honest,personality,,false,false
 aesthete,aesthete,trade,,false,false
 bookworm,bookworm,academic,,false,false
-constant tinkerer,constant tinkerer,trade,,false,false
+constant_tinkerer,constant tinkerer,trade,,false,false
 devout,devout,religious,,false,false
 slippery,slippery,personality,,false,false
-glad hander,glad hander,personality,,false,false
+glad_hander,glad hander,personality,,false,false
 survivor,survivor,reputation,,false,false
-head for numbers,head for numbers,academic,,false,false
+head_for_numbers,head for numbers,academic,,false,false
 bruiser,bruiser,physical,,false,false
 shy,shy,personality,,false,false
-poker face,poker face,trade,,false,false
-free thinker,free thinker,reputation,,false,false
+poker_face,poker face,trade,,false,false
+free_thinker,free thinker,reputation,,false,false
 callous,callous,personality,,false,false
-wise beyond their years,wise beyond their years,mental,,false,false
-vast vocabulary,vast vocabulary,personality,,false,false
-pride in their work,pride in their work,trade,,false,false
-noblesse oblige,noblesse oblige,personality,,false,false
-keen taste,keen taste,art,,false,false
+wise_beyond_their_years,wise beyond their years,mental,,false,false
+vast_vocabulary,vast vocabulary,personality,,false,false
+pride_in_their_work,pride in their work,trade,,false,false
+noblesse_oblige,noblesse oblige,personality,,false,false
+keen_taste,keen taste,art,,false,false
 libertine,libertine,personality,,false,false
 traditional,traditional,personality,,false,false
-born in the saddle,born in the saddle,trade,,false,false
-home on the road,home on the road,trade,,false,false
-Holy presence,Holy presence,religious,,false,false
-reassuring presence,reassuring presence,personality,,false,false
-imposing presence,imposing presence,personality,,false,false
-threatening presence,threatening presence,personality,,false,false
-evil presence,evil presence,personality,,false,false
+born_in_the_saddle,born in the saddle,trade,,false,false
+home_on_the_road,home on the road,trade,,false,false
+Holy_presence,Holy presence,religious,,false,false
+reassuring_presence,reassuring presence,personality,,false,false
+imposing_presence,imposing presence,personality,,false,false
+threatening_presence,threatening presence,personality,,false,false
+evil_presence,evil presence,personality,,false,false
 commanding,commanding,personality,,false,false
-born at sea,born at sea,seamanship,,false,false
+born_at_sea,born at sea,seamanship,,false,false
 optimistic,optimistic,personality,,false,false
 pessimistic,pessimistic,personality,,false,false
 smooth,smooth,personality,,false,false
 imperious,imperious,personality,,false,false
 hot-headed,hot-headed,personality,,false,false
-ice cold,ice cold,personality,,false,false
-fast talker,fast talker,personality,,false,false
+ice_cold,ice cold,personality,,false,false
+fast_talker,fast talker,personality,,false,false
 laconic,laconic,personality,,false,false
-mark of privilege,mark of privilege,physical,,false,false
+mark_of_privilege,mark of privilege,physical,,false,false
 whisperer,whisperer,personality,,false,false
 aggressive,aggressive,personality,,false,false
 passive,passive,personality,,false,false
 cynical,cynical,personality,,false,false
 faithful,faithful,personality,,false,false
-tells tall tales,tells tall tales,reputation,,false,false
+tells_tall_tales,tells tall tales,reputation,,false,false
 adorable,adorable,social,,false,false
 conspicuous,conspicuous,social,,false,false
 inconspicuous,inconspicuous,social,,false,false
-touched by the arcane,touched by the arcane,magic,,false,false
+touched_by_the_arcane,touched by the arcane,magic,,false,false
 jaded,jaded,personality,,false,false
-cat lover,cat lover,personality,,false,false
-dog lover,dog lover,personality,,false,false
+cat_lover,cat lover,personality,,false,false
+dog_lover,dog lover,personality,,false,false
 gloryhound,gloryhound,personality,,false,false
-cold blooded,cold blooded,criminal,,false,false
+cold_blooded,cold blooded,criminal,,false,false
 blunt,blunt,personality,,false,false
-thousand yard stare,thousand yard stare,military,,false,true
+thousand_yard_stare,thousand yard stare,military,,false,true
 crisp,crisp,personality,,false,false
 gossip,gossip,personality,,false,false
-seen it all,seen it all,personality,,false,false
-grudge holder,grudge holder,personality,,false,false
+seen_it_all,seen it all,personality,,false,false
+grudge_holder,grudge holder,personality,,false,false
 coarse,coarse,personality,,false,false
-sea legs,sea legs,seamanship,,false,false
+sea_legs,sea legs,seamanship,,false,false
 greedy,greedy,personality,,false,false
-inveterate liar,inveterate liar,personality,,false,false
+inveterate_liar,inveterate liar,personality,,false,false
 world-weary,world-weary,personality,,false,false
 obsessive,obsessive,personality,,false,false
 rogueish,rogueish,personality,,false,false
 generous,generous,personality,,false,false
 stingy,stingy,personality,,false,false
 brooding,brooding,personality,,false,false
-suicidally brave,suicidally brave,personality,,false,true
+suicidally_brave,suicidally brave,personality,,false,true
 courageous,courageous,personality,,false,false
 humble,humble,personality,,false,false
 barfly,barfly,trade,,false,false
-poor sense of direction,poor sense of direction,sensory,,false,false
+poor_sense_of_direction,poor sense of direction,sensory,,false,false
 orphan,orphan,social,,false,false
-touch of madness,touch of madness,mental,,false,false
+touch_of_madness,touch of madness,mental,,false,false
 fanatical,fanatical,personality,,false,false
-aches and pains,aches and pains,physical,,true,true
+aches_and_pains,aches and pains,physical,,true,true
 cruel,cruel,personality,,false,false
-otherworldly taint,otherworldly taint,magic,,false,false
+otherworldly_taint,otherworldly taint,magic,,false,false
 apostate,apostate,religious,,false,false
 heretic,heretic,religious,,false,false
 clumsy,clumsy,physical,,false,false
 outlaw,outlaw,social,,false,false
 lazy,lazy,personality,,false,false
 diseased,diseased,physical,,false,false
-road weary,road weary,trade,,false,false
-chip on their shoulder,chip on their shoulder,personality,,false,false
-sense of entitlement,sense of entitlement,personality,,false,false
-surrounded by rumors,surrounded by rumors,political,,false,false
-night terrors,night terrors,mental,,false,true
-weight of regret,weight of regret,mental,,false,true
-nervous tick,nervous tick,physical,,false,true
+road_weary,road weary,trade,,false,false
+chip_on_their_shoulder,chip on their shoulder,personality,,false,false
+sense_of_entitlement,sense of entitlement,personality,,false,false
+surrounded_by_rumors,surrounded by rumors,political,,false,false
+night_terrors,night terrors,mental,,false,true
+weight_of_regret,weight of regret,mental,,false,true
+nervous_tick,nervous tick,physical,,false,true
 reckless,reckless,personality,,false,false
 coward,coward,personality,,false,false
-poor eyesight,poor eyesight,sensory,,true,false
-hard of hearing,hard of hearing,sensory,,true,false
-face only a mother could love,face only a mother could love,physical,,false,false
+poor_eyesight,poor eyesight,sensory,,true,false
+hard_of_hearing,hard of hearing,sensory,,true,false
+face_only_a_mother_could_love,face only a mother could love,physical,,false,false
 exile,exile,political,,false,false
 sadistic,sadistic,personality,,false,false
-heretical beliefs,heretical beliefs,religious,,false,false
-forbidden knowledge,forbidden knowledge,academic,,false,false
-bad reputation,bad reputation,social,,false,false
-smell of fear,smell of fear,social,,false,false
+heretical_beliefs,heretical beliefs,religious,,false,false
+forbidden_knowledge,forbidden knowledge,academic,,false,false
+bad_reputation,bad reputation,social,,false,false
+smell_of_fear,smell of fear,social,,false,false
 frail,frail,physical,,true,false
-bad back,bad back,physical,,true,false
+bad_back,bad back,physical,,true,false
 weak-willed,weak-willed,mental,,false,false
 wanted,wanted,political,,false,false
 deserter,deserter,military,,false,false
-hears voices,hears voices,mental,,false,false
+hears_voices,hears voices,mental,,false,false
 murderer,murderer,political,,false,false
 kinslayer,kinslayer,political,,false,false
+green_thumb,green thumb,trade,,false,false
+home_in_the_wilds,home in the wilds,trade,,false,false
+prone_to_panic,prone to panic,mental,,false,false
+dutiful,dutiful,personality,,false,false
+hardworking,hardworking,personality,,false,false
+literate,literate,academic,,,
