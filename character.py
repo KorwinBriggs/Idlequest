@@ -21,14 +21,14 @@ class character:
         self.pos = self.pronouns["possessive"]
 
         self.skills = {}
-        # list of all skills by id and their levels. instantiate at 0, modify through careers/events
+        # list of all skills by id and their levels. instantiate at 0, modify through lifepaths/events
 
         self.skillmods = {}
         # list of skill modifiers from active appearances, traits, items, etc.
         # these are added/removed whenever appearances, traits, items, etc are added/removed.
         # these act as multipliers of skills through events.
 
-        self.appearances = self.__character_creation_appearance(3)
+        self.appearances = {}
         # list of appearances by id.
 
         self.traits = []
@@ -40,7 +40,11 @@ class character:
         self.setting = setting
         # current setting id
 
-        self.career = self.__character_creation_career_from_setting(setting)
+        self.lifepath = {
+            "id": "newborn",
+            "name": "newborn",
+            "years": "0",
+        }
         # current lifepath id
 
         self.history = []
@@ -54,43 +58,46 @@ class character:
         # this is added to throughout gameplay and used afterwords to make a log/postscript
 
 
-    def addSkill(skillid, num):
-        0
+    # def addSkill(skillid, num):
+    #     0
     
-    def addAppearance(appearanceid):
-        0
+    # def addAppearance(appearanceid):
+    #     0
         
-    def addTrait(traitid):
-        0
+    # def addTrait(traitid):
+    #     0
         
-    def addPosession(posessionid):
-        0
+    # def addPosession(posessionid):
+    #     0
         
-    def removePosession(posessionid):
-        0
+    # def removePosession(posessionid):
+    #     0
 
-    def add_career(careerid):
-        0
+    def change_lifepath(self, lifepath_id):
+        # push old lifepath details into history
+        # ...later
 
-    def __character_creation_appearance(self, num_appearances):
-        # take random appearance from db, check if one of its category is already in the list,
-        # if not, add it to the list and its category to the used_categories list
-        db_appearances = pd.read_sql_query( "SELECT id, name, category FROM appearance WHERE aging = 'false' AND scar = 'false'", db )
-        id_list = []
-        used_categories = []
+        # load new lifepath details from db
+        db_lifepath = pd.read_sql_query(f"SELECT * FROM lifepaths WHERE id = '{lifepath_id}'", db)
+        lifepath = db_lifepath.iloc[0].to_dict()
+        self.lifepath = lifepath
+        self.setting = lifepath['setting']
+        
 
-        while len(id_list) < num_appearances:
-            random_row = random.randint(0, len(db_appearances))
-            if not db_appearances.iloc[random_row].values[2] in used_categories:
-                id_list += [ db_appearances.iloc[random_row].values[0] ]
-                used_categories += [ db_appearances.iloc[random_row].values[2] ]
+    # def __character_creation_appearance(self, num_appearances):
+    #     # take random appearance from db, check if one of its category is already in the list,
+    #     # if not, add it to the list and its category to the used_categories list
+    #     db_appearances = pd.read_sql_query( "SELECT id, name, category FROM appearance WHERE aging = 'false' AND scar = 'false'", db )
+    #     id_list = []
+    #     used_categories = []
 
-        return id_list
-    
-    def __character_creation_career_from_setting(self, setting):
-        # takes setting, returns the kid career there
-        db_job = pd.read_sql_query( "SELECT id FROM careers WHERE setting = '" + setting + "' AND kid = 'true'", db)
-        return db_job['id'].values[0]
+    #     while len(id_list) < num_appearances:
+    #         random_row = random.randint(0, len(db_appearances))
+    #         if not db_appearances.iloc[random_row].values[2] in used_categories:
+    #             id_list += [ db_appearances.iloc[random_row].values[0] ]
+    #             used_categories += [ db_appearances.iloc[random_row].values[2] ]
+
+    #     return id_list
 
     def __character_creation_pronouns(self, name, gender):
         if gender == "male":
@@ -109,8 +116,8 @@ class character:
             }
         raise Exception("Problem assigning pronouns")
         
-    def parse_event_string(self, string):
-        return string.format(**self.dynamic_string_words)
+    # def parse_event_string(self, string):
+    #     return string.format(**self.dynamic_string_words)
 
     def appearanceToString(self):
         # build query from appearance ids
