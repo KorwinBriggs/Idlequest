@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import argparse
 from character import character
+import gameparser
 
 parser = argparse.ArgumentParser(
     prog='program name',
@@ -31,6 +32,8 @@ parser.add_argument('-m', '--mode', choices=['cli', 'web'], default='cli')
 
 args = parser.parse_args()
 mode = args.mode
+
+db = sqlite3.connect("db/gamedata.db") 
 
 
 def create_character(**args):
@@ -137,7 +140,7 @@ def __get_character_description_web(character):
 
 def baby_lifepath_from_setting(setting):
     # takes setting, returns the kid lifepath there
-    db_lifepath = pd.read_sql_query( "SELECT id FROM lifepaths WHERE setting = '" + setting + "' AND baby = 'true'", db)
+    db_lifepath = pd.read_sql_query( f"SELECT id FROM lifepaths WHERE setting = '{setting}' AND baby = 'true'", db)
     if len(db_lifepath) == 0:
         raise Exception("Couldn't find baby lifepath")
     return db_lifepath['id'].values[0]
@@ -148,6 +151,7 @@ def kid_lifepath_from_setting(setting):
     if len(db_lifepath) == 0:
         raise Exception("Couldn't find kid lifepath")
     return db_lifepath['id'].values[0]
+
 
 def get_baby_events(character):
         events = []
@@ -172,7 +176,7 @@ def get_baby_events(character):
                     'name': f"baby appearance {random_appearance['category']}",
                     'prereq': f"lifepath:baby",
                     'difficulty': '0',
-                    'setup': f"{appearance_setups[len(events)-1]} {random_appearance['name']}.",
+                    'setup': f"{appearance_setups[len(events)]} {random_appearance['name']}.",
                     'success_description': 'NULL',
                     'failure_description': 'NULL'
                 })
@@ -225,7 +229,7 @@ def run_event(event, character):
             event_string += f" {event['failure_description']}"
             # also parse/add rewards here
 
-    return parse_string(event_string, character)
+    return gameparser.parse_pronouns(event_string, character)
 
 
 def decision(character):
@@ -257,18 +261,6 @@ def get_random_row(dataframe):
     # write(dataframe.iloc[random_row])
     return dataframe.iloc[random_row]
 
-def parse_string(string, character):
-    return string.format(
-        Name = character.name,
-        name = character.name,
-        sub = character.sub,
-        Sub = character.sub.capitalize(),
-        obj = character.obj,
-        Obj = character.obj.capitalize(),
-        pos = character.pos,
-        Pos = character.pos.capitalize()
-    )
-
 # write and read are helper functions.
 # they write and read to cli or webhooks, depending on the program's mode
 def write(message):
@@ -289,7 +281,6 @@ def read(message):
 
 if __name__ == "__main__":
 
-    db = sqlite3.connect("db/gamedata") 
     game_running = True
     while game_running == True:
 
