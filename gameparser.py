@@ -15,15 +15,7 @@ def parse_pronouns(string, character):
         Pos = character.pos.capitalize()
     )
 
-def parse_effect(string):
-    # takes string, returns dictionary with something like
-    # {
-    #   add: {
-    #       skills: [list of skill],
-    #       traits: [list of traits]
-    #   },
-    #   subtract: {etc.}
-    # }
+def parse_effects(string):
 
     result = {
         'gain': {
@@ -32,7 +24,8 @@ def parse_effect(string):
             'abilities': [],
             'motivations': [],
             'keepsakes': [],
-            'lifepaths': []
+            'lifepaths': [],
+            'appearances': []
         },
         'lose': {
             'skills': [],
@@ -40,7 +33,8 @@ def parse_effect(string):
             'abilities': [],
             'motivations': [],
             'keepsakes': [],
-            'lifepaths': []
+            'lifepaths': [],
+            'appearances': []
         }
     }
     
@@ -52,11 +46,10 @@ def parse_effect(string):
     subsections_by_commands = divide_list_at_keywords(words_list, command_words)
 
     # get subsublists per type of effect
-    type_words = ["skills", "motivations", "traits", "attributes", "lifepaths", "keepsakes"]
+    type_words = ["skills", "motivations", "traits", "attributes", "lifepaths", "keepsakes", "appearances"]
     for command_subsection in subsections_by_commands:
 
         command = command_subsection[0]
-
         subsections_by_type = divide_list_at_keywords(command_subsection, type_words)
 
         # if gain or lose, add everything that follows
@@ -108,7 +101,37 @@ def parse_effect(string):
 
     return result
 
+def parse_prereqs(string):
+    result = {
+        'skills': [],
+        'traits': [],
+        'abilities': [],
+        'motivations': [],
+        'keepsakes': [],
+        'lifepaths': [],
+        'settings': []
+    }
 
+    # divide string into list of words, then into sublists by type
+    words_list = re.split(r'\(|\)|:\s|,\s', string)
+    type_words = ["skills", "motivations", "traits", "attributes", "lifepaths", "keepsakes", "settings"]
+    subsections_by_type = divide_list_at_keywords(words_list, type_words)
+
+    for type_subsection in subsections_by_type:
+        item_type = type_subsection[0]
+
+        for index in range(len(type_subsection)):
+            if index == 0:
+                continue # skip the first item in each list, ie 'skills' or 'motivations'
+            else:
+                item_id = type_subsection[index]
+                result[item_type].append(item_id) # add item to appropriate place in result dict
+
+    return result
+
+
+def parse_test(string):
+    0
     
 ############# HELPER FUNCTIONS ##############
 
@@ -133,4 +156,5 @@ def divide_list_at_keywords(words_list, keywords_list):
     
 
 if __name__ == "__main__":
-    print(parse_effect("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly)"))
+    print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly)"))
+    print(parse_prereqs("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))

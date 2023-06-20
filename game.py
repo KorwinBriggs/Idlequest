@@ -12,12 +12,14 @@ game class has static functions to create a character, starts a clock, calls lif
 
 
 import sqlite3
+import numpy as np
+import pandas as pd
 import random
 import time
 import datetime
-import numpy as np
-import pandas as pd
 import argparse
+import console
+
 from character import character
 import gameparser
 
@@ -32,6 +34,7 @@ parser.add_argument('-m', '--mode', choices=['cli', 'web'], default='cli')
 
 args = parser.parse_args()
 mode = args.mode
+
 
 db = sqlite3.connect("db/gamedata.db") 
 
@@ -49,7 +52,8 @@ def __create_character_cli():
     sex, name, setting = None, None, None
 
     while sex == None:
-        sex_input = read('But what is the sex? M/F ')
+        # sex_input = read('But what is the sex? M/F ')
+        sex_input = console.read('But what is the sex? M/F')
         if sex_input == 'm' or sex_input == 'M' or sex_input == 'male' or sex_input == 'Male':
             write('Aha! A boy!')
             sex = 'male'
@@ -138,6 +142,7 @@ def __get_character_description_cli(character):
 def __get_character_description_web(character):
     0
 
+
 def baby_lifepath_from_setting(setting):
     # takes setting, returns the kid lifepath there
     db_lifepath = pd.read_sql_query( f"SELECT id FROM lifepaths WHERE setting = '{setting}' AND baby = 'true'", db)
@@ -158,7 +163,7 @@ def get_baby_events(character):
 
         # take random appearance from db, check if one of its category is already in the list,
         # if not, add it to the list and its category to the used_categories list
-        db_appearances = pd.read_sql_query( "SELECT id, name, category FROM appearance WHERE aging = 'false' AND scar = 'false'", db )
+        db_appearances = pd.read_sql_query( "SELECT id, name, category FROM appearances WHERE aging = 'false' AND scar = 'false'", db )
 
         appearance_setups = [
             "Even as an infant, {name} has",
@@ -173,12 +178,15 @@ def get_baby_events(character):
             if not random_appearance['category'] in used_categories:
                 events.append({
                     'id': f"baby_appearance_{random_appearance['category']}",
-                    'name': f"baby appearance {random_appearance['category']}",
-                    'prereq': f"lifepath:baby",
-                    'difficulty': '0',
+                    'name': f"baby appearance {random_appearance['name']}",
+                    'prereqs': f"lifepath: baby",
+                    'test_skill_id': '',
+                    'difficulty': 0,
                     'setup': f"{appearance_setups[len(events)]} {random_appearance['name']}.",
-                    'success_description': 'NULL',
-                    'failure_description': 'NULL'
+                    'success_description': '',
+                    'success_effect': f"gain(appearances: {random_appearance['id']})",
+                    'failure_description': '',
+                    'failure_effect': ''
                 })
 
         # 1/3 chance of adding baby_normal event to list; otherwise, random trait event
@@ -186,29 +194,46 @@ def get_baby_events(character):
         if normal_chance == 1:
             db_baby_trait_events = pd.read_sql_query( "SELECT * FROM events WHERE id = 'baby_normal'", db)
         else:
-            db_baby_trait_events = pd.read_sql_query( "SELECT * FROM events WHERE prereq = 'lifepath:baby'", db)
+            db_baby_trait_events = pd.read_sql_query( "SELECT * FROM events WHERE prereqs = 'lifepaths: baby'", db)
         # choose random baby trait event from list
         baby_trait_event = get_random_row(db_baby_trait_events).to_dict()
         events.append(baby_trait_event)
 
         return events
 
-
 def get_events(character):
     
     events = [] # the list of dicts to return
     used_events = [] # list of event_id's already used, for easier searching
 
-    # get list of possible event ids
-    db_events_query = f"SELECT * FROM events WHERE "
-    db_events_query += f"prereq = 'lifepath:{character.lifepath['id']}' "
-    db_events_query += f"OR prereq = 'setting:{character.setting}' "
-    db_possible_events = pd.read_sql_query(db_events_query, db)
+    # get all events
+    db_all_events = pd.read_sql_query(f"SELECT id, prereqs FROM events WHERE id IS NOT NULL", db)
+    all_events_dict = db_all_events.to_dict(orient="records")
 
-    if len(db_possible_events) < int(character.lifepath['years']):
+    # parse prereqs and make list of events whose prereqs the character has
+    possible_event_ids = []
+    for event in all_events_dict:
+        parsed_prereqs = gameparser.parse_prereqs(event['prereqs'])
+        keep_event = False
+        if character.setting in parsed_prereqs['settings']: 
+            keep_event = True
+        if character.lifepath['id'] in parsed_prereqs['lifepaths']:
+            keep_event = True
+        if keep_event:
+            possible_event_ids.append(event['id'])
+
+    # check that there are enough events in the list, total
+    if len(possible_event_ids) < int(character.lifepath['years']):
         raise Exception("Couldn't find enough events for character.")
+    
+    # get full events from db
+    query = "SELECT * FROM events WHERE"
+    for id in possible_event_ids:
+        query += f" id = '{id}' OR"
+    query = query[:-3] # chop off last " OR"
+    db_possible_events = pd.read_sql_query(query, db)
 
-    # fill list with events
+    # fill events list with one event per year
     while len(events) < int(character.lifepath['years']):
         random_event = get_random_row(db_possible_events).to_dict()
         # check if even is already in list; if not, add it
@@ -220,16 +245,35 @@ def get_events(character):
 
 
 def run_event(event, character):
+
     event_string = event['setup']
+    effects = {}
+    
     if event['success_description'] != 'NULL' and event['failure_description'] != 'NULL':
+
+        # test -- later, add logic to test whatever is higher, relevant ability or skill
         if random.randint(1, 10) >= int(event['difficulty']):
             event_string += f" {event['success_description']}"
-            # also parse/add rewards here
+            effects = gameparser.parse_effects(event['success_effect'])
         else:
             event_string += f" {event['failure_description']}"
-            # also parse/add rewards here
+            effects = gameparser.parse_effects(event['failure_effect'])
 
-    return gameparser.parse_pronouns(event_string, character)
+        write(gameparser.parse_pronouns(event_string, character))
+
+        effects_results = character.update_stats(effects)
+        for result in effects_results: # write in the correct color
+            if result['change'] == 'gain':
+                if result['success'] == True:
+                    write_gain(result['message'])
+                else:
+                    write_gain_failed(result['message'])
+            elif result['change'] == 'loss':
+                if result['success'] == True:
+                    write_loss(result['message'])
+                else:
+                    write_loss_failed(result['message'])
+
 
 
 def decision(character):
@@ -263,19 +307,41 @@ def get_random_row(dataframe):
 
 # write and read are helper functions.
 # they write and read to cli or webhooks, depending on the program's mode
-def write(message):
+def write(text):
     if mode == 'cli':
-        print('\n' + str(message))
+        return console.write(text)
     elif mode == 'web':
         0
 
-def read(message):
+def read(text, choices=None):
     if mode == 'cli':
-        return input('\n' + message + ' ')
+        return console.read(text, choices)
     elif mode == 'web':
         0
     
+def write_gain(text):
+    if mode == 'cli':
+        return console.write_gain(text)
+    elif mode == 'web':
+        0
 
+def write_gain_failed(text):
+    if mode == 'cli':
+        return console.write_gain_failed(text)
+    elif mode == 'web':
+        0
+
+def write_loss(text):
+    if mode == 'cli':
+        return console.write_loss(text)
+    elif mode == 'web':
+        0
+
+def write_loss_failed(text):
+    if mode == 'cli':
+        return console.write_loss_failed(text)
+    elif mode == 'web':
+        0
 
 # ---------------- GAME START ---------------- #
 
@@ -341,7 +407,7 @@ if __name__ == "__main__":
             # choose first event on the list
             this_event = events_list[0]
             # run event and print output
-            write(run_event(this_event, main_character))
+            run_event(this_event, main_character)
             # remove first item from list
             events_list.pop(0)
 

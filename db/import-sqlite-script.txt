@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS opportunities;
 DROP TABLE IF EXISTS turning_points;
 
 
-CREATE TABLE appearance(
+CREATE TABLE appearances(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
    category TEXT NOT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE keepsakes(
 CREATE TABLE events(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
-   prereq TEXT NOT NULL,
+   prereqs TEXT NOT NULL,
    test_skill_id TEXT,
    difficulty INT NOT NULL,
    setup TEXT NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE turning_points(
 
 .mode csv
 
-.import --skip 1 "idlegamedata/appearance.csv" appearance
+.import --skip 1 "idlegamedata/appearances.csv" appearances
 .import --skip 1 "idlegamedata/settings.csv" settings
 .import --skip 1 "idlegamedata/motivations.csv" motivations
 .import --skip 1 "idlegamedata/abilities.csv" abilities
