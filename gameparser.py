@@ -17,6 +17,7 @@ def parse_pronouns(string, character):
 
 def parse_effects(string):
 
+    # for things like: "gainOne(skills: farming, plants_and_herbs), gainOne(motivations: dutiful, industrious, traditional, humble)"
     result = {
         'gain': {
             'skills': [],
@@ -72,7 +73,7 @@ def parse_effects(string):
                 for type_subsection in subsections_by_type:
                     total_options += len(type_subsection)-1
 
-                # choose option
+                # choose option number
                 chosen_option = random.randint(1, total_options)
 
                 # count forward to get option and type
@@ -96,12 +97,13 @@ def parse_effects(string):
         else: 
             raise Exception(f"Error while parsing effect: Unexpected command {command}")
         
-    # check for duplicates and remove them
-    # wait, nevermind - there should be no situation where i'm adding and removing the same skill in the same event
 
     return result
 
+
+
 def parse_prereqs(string):
+    # for things like: "lifepaths: baby, skills: farming"
     result = {
         'skills': [],
         'traits': [],
@@ -130,8 +132,41 @@ def parse_prereqs(string):
     return result
 
 
-def parse_test(string):
-    0
+def parse_comma_lists( 
+        skills = [],
+        traits = [],
+        abilities = [],
+        motivations = [],
+        keepsakes = [],
+        lifepaths = [],
+        settings = [],
+        opportunities = []
+        ):
+    
+    # for individual lists like "strength, toughness, stamina", where the type is already known
+    # call function like: parse_comma_lists(abilities="strength, toughness, stamina", skills="farming")
+    string_list = [skills, traits, abilities, motivations, keepsakes, lifepaths, settings, opportunities]
+    parsed_list = []
+    for item in string_list:
+        if isinstance(item, str):
+            parsed_item = re.split(r'\(|\)|:\s|,\s', item) # split into list of words
+        else:
+            parsed_item = item
+        parsed_list.append(parsed_item)
+
+    result = {
+        'skills': parsed_list[0],
+        'traits': parsed_list[1],
+        'abilities': parsed_list[2],
+        'motivations': parsed_list[3],
+        'keepsakes': parsed_list[4],
+        'lifepaths': parsed_list[5],
+        'settings': parsed_list[6],
+        'opportunities': parsed_list[7]
+    }
+
+    return result
+
     
 ############# HELPER FUNCTIONS ##############
 
@@ -158,3 +193,4 @@ def divide_list_at_keywords(words_list, keywords_list):
 if __name__ == "__main__":
     print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly)"))
     print(parse_prereqs("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
+    print(parse_comma_lists(abilities="strength, toughness, stamina", skills="farming"))

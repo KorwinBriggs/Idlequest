@@ -243,7 +243,6 @@ def get_events(character):
 
     return events
 
-
 def run_event(event, character):
 
     event_string = event['setup']
@@ -274,6 +273,38 @@ def run_event(event, character):
                 else:
                     write_loss_failed(result['message'])
 
+
+
+def get_turning_point(setting):
+    0
+    # choose random turning point from setting and return it
+
+def run_turning_point(turning_point, character):
+    0
+    # should update character and return list of new opportunities
+
+def get_opportunities(character):
+    0
+    # start by calling get_turning_point (which returns a turning point), 
+    # and run_turning_point (which alters character and returns a list of opportunities)
+    #
+    # populate the list of opportunities from the bottom with the turning_point, 
+    # then pull all available opportunities and fill out the rest from the top as follows:
+    #
+    # 1. choose continuation of previous career
+    #    (if kid, do most likely career instead)
+    # 2. choose most likely next lifepath based on abilities, skills, motivations 
+    #    report which abilities, skills, motivations made it likely
+    #    (if same as the choice from 1, pick next most likely)
+    # 3. choose a random lifepath of medium or higher risk
+    #    
+    # 4. choose a random lifepath of high risk
+
+def run_opportunity(opportunity, character):
+    0
+    # run chosen opportunity, including any changes to character.
+    # should change character's lifepath, meaning the next call of
+    # get_events(character) should give the right events.
 
 
 def decision(character):
@@ -363,6 +394,7 @@ if __name__ == "__main__":
         main_character = create_character()
 
         # ---------------- CLOCK START ---------------- #
+        # ----- Runs the game-loop every interval ----- #
 
         game_length = get_game_length()
 
@@ -383,7 +415,19 @@ if __name__ == "__main__":
             # if (time.strftime('%S') == '00'): # at top of minute, reset interval to each minute
             #     interval = 60 
 
-            # ---------------- THE LOOP ---------------- #
+
+            # ---------------------------- GAME LOOP ----------------------------- #
+
+            # If events_list has remaining events, run the events on intervals
+            # If it's empty, fill it by checking lifepath:
+            #   - if just started game (lifepath: newborn), set to baby and make custom baby events
+            #   - next time, switch to relevatn kid lifepath, get_events for the kid lifepath
+            #   - subsequent times: 
+            #     - run a turning point
+            #     - set up opportunity list
+            #     - have player pick and resolve one of those opportunities
+            #     - get_events for the new lifepath
+            #   - final time, if very old, go to game end and postscript
 
             if len(events_list) == 0: # if no events left in list (ie, if all have run)
 
@@ -403,12 +447,9 @@ if __name__ == "__main__":
                     write("Grown to adult.") # end game for now
                     game_running = end_game()
                 
-            # run event
-            # choose first event on the list
-            this_event = events_list[0]
-            # run event and print output
-            run_event(this_event, main_character)
-            # remove first item from list
+            # RUN EVENT: choose first event on list, run it, remove it from list
+            event_to_run = events_list[0]
+            run_event(event_to_run, main_character)
             events_list.pop(0)
 
 
