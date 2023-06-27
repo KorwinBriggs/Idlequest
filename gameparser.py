@@ -47,7 +47,7 @@ def parse_effects(string):
     subsections_by_commands = divide_list_at_keywords(words_list, command_words)
 
     # get subsublists per type of effect
-    type_words = ["skills", "motivations", "traits", "attributes", "lifepaths", "keepsakes", "appearances"]
+    type_words = ["skills", "motivations", "traits", "abilities", "lifepaths", "keepsakes", "appearances"]
     for command_subsection in subsections_by_commands:
 
         command = command_subsection[0]
@@ -116,7 +116,7 @@ def parse_prereqs(string):
 
     # divide string into list of words, then into sublists by type
     words_list = re.split(r'\(|\)|:\s|,\s', string)
-    type_words = ["skills", "motivations", "traits", "attributes", "lifepaths", "keepsakes", "settings"]
+    type_words = ["skills", "traits", "abilities", "motivations", "keepsakes", "lifepaths", "settings"]
     subsections_by_type = divide_list_at_keywords(words_list, type_words)
 
     for type_subsection in subsections_by_type:
@@ -191,6 +191,8 @@ def divide_list_at_keywords(words_list, keywords_list):
     
 
 if __name__ == "__main__":
-    print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly)"))
-    print(parse_prereqs("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
-    print(parse_comma_lists(abilities="strength, toughness, stamina", skills="farming"))
+    # print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly)"))
+    # print(parse_prereqs("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
+    # print(parse_comma_lists(abilities="strength, toughness, stamina", skills="farming"))
+    print(parse_effects("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))
+    print(parse_comma_lists("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))

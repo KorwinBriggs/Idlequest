@@ -2,7 +2,7 @@
 PRAGMA foreign_keys = ON;
 
 
-DROP TABLE IF EXISTS appearance;
+DROP TABLE IF EXISTS appearances;
 DROP TABLE IF EXISTS settings;
 DROP TABLE IF EXISTS motivations;
 DROP TABLE IF EXISTS abilities;
@@ -12,7 +12,7 @@ DROP TABLE IF EXISTS lifepaths;
 DROP TABLE IF EXISTS keepsakes;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS opportunities;
-DROP TABLE IF EXISTS turning_points;
+DROP TABLE IF EXISTS situations;
 
 
 CREATE TABLE appearances(
@@ -97,6 +97,7 @@ CREATE TABLE events(
 
 CREATE TABLE opportunities(
    id TEXT PRIMARY KEY,
+   prereq_type TEXT NOT NULL,
    prereq TEXT NOT NULL,
    choice_description TEXT NOT NULL,
    motivations TEXT,
@@ -106,16 +107,19 @@ CREATE TABLE opportunities(
    difficulty INTEGER NOT NULL,
    setup TEXT NOT NULL,
    success_description TEXT,
-   success_lifepaths TEXT NOT NULL,
+   success_effects TEXT,
    failure_description TEXT,
-   failure_lifepaths TEXT NOT NULL
+   failure_effects TEXT
 );
 
-CREATE TABLE turning_points(
+CREATE TABLE situations(
    id TEXT PRIMARY KEY,
+   headline TEXT NOT NULL,
    setting TEXT NOT NULL,
-   description TEXT,
-   opportunities TEXT
+   description TEXT NOT NULL,
+   effects TEXT NOT NULL,
+   lifepath_replacements INTEGER NOT NULL,
+   notes TEXT
 );
 
 
@@ -131,6 +135,6 @@ CREATE TABLE turning_points(
 .import --skip 1 "idlegamedata/keepsakes.csv" keepsakes
 .import --skip 1 "idlegamedata/events.csv" events
 .import --skip 1 "idlegamedata/opportunities.csv" opportunities
-.import --skip 1 "idlegamedata/turning_points.csv" turning_points
+.import --skip 1 "idlegamedata/situations.csv" situations
 
 .quit

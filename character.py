@@ -151,7 +151,7 @@ class character:
             success = False
             message = f"Ability: {self.abilities['ability_id']['name'].capitalize()} can't go higher!"
         else:
-            message = f"+ Ability: {self.abilities['ability_id']['name'].capitalize()}"
+            message = f"+ Ability: {self.abilities[ability_id]['name'].capitalize()}"
 
         return {'stat': stat, 'change': change, 'success': success, 'message': message}
 
@@ -167,7 +167,7 @@ class character:
             success = False
             message = f"Ability: {self.abilities['ability_id']['name'].capitalize()} can't go lower!"
         else:
-            message = f"- Ability: {self.abilities['ability_id']['name'].capitalize()}"
+            message = f"- Ability: {self.abilities[ability_id]['name'].capitalize()}"
 
         return {'stat': stat, 'change': change, 'success': success, 'message': message}
 
@@ -311,7 +311,7 @@ class character:
             self.appearances[appearance_id] = appearance_dict
             message = f"Appearance gained: {self.appearances[appearance_id]['name'].capitalize()}"
         else:
-            message = f"Already had trait: {self.appearances[appearance_id]['name'].capitalize()}"
+            message = f"Already had appearance: {self.appearances[appearance_id]['name'].capitalize()}"
             success = False
 
         return {'stat': stat, 'change': change, 'success': success, 'message': message}

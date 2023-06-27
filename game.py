@@ -188,6 +188,7 @@ def get_baby_events(character):
                     'failure_description': '',
                     'failure_effect': ''
                 })
+                used_categories.append(random_appearance['category'])
 
         # 1/3 chance of adding baby_normal event to list; otherwise, random trait event
         normal_chance = random.randint(1,3)
@@ -243,6 +244,7 @@ def get_events(character):
 
     return events
 
+
 def run_event(event, character):
 
     event_string = event['setup']
@@ -260,35 +262,43 @@ def run_event(event, character):
 
         write(gameparser.parse_pronouns(event_string, character))
 
-        effects_results = character.update_stats(effects)
-        for result in effects_results: # write in the correct color
-            if result['change'] == 'gain':
-                if result['success'] == True:
-                    write_gain(result['message'])
-                else:
-                    write_gain_failed(result['message'])
-            elif result['change'] == 'loss':
-                if result['success'] == True:
-                    write_loss(result['message'])
-                else:
-                    write_loss_failed(result['message'])
+        run_effects(effects, character)
+
+def run_effects(effects, character):
+    effects_results = character.update_stats(effects)
+    for result in effects_results: # write in the correct color
+        if result['change'] == 'gain':
+            if result['success'] == True:
+                write_gain(result['message'])
+            else:
+                write_gain_failed(result['message'])
+        elif result['change'] == 'loss':
+            if result['success'] == True:
+                write_loss(result['message'])
+            else:
+                write_loss_failed(result['message'])
 
 
-
-def get_turning_point(setting):
-    0
+def get_situation(setting):
     # choose random turning point from setting and return it
+    db_situations = pd.read_sql_query(f"SELECT * FROM situations WHERE setting = '{setting}'", db)
+    return get_random_row(db_situations)
 
-def run_turning_point(turning_point, character):
-    0
-    # should update character and return list of new opportunities
+def run_situation(situation, character):
+    # print situation info. Originally this was going to be more involved, 
+    # but most of the remaining logic is now in get_opportunities
+    write(situation['headline'])
+    write(gameparser.parse_pronouns(situation['description'], character))
+    effects = gameparser.parse_effects(situation['effects'])
+    run_effects(effects, character)
 
-def get_opportunities(character):
+
+def get_opportunities(situation, character):
     0
-    # start by calling get_turning_point (which returns a turning point), 
-    # and run_turning_point (which alters character and returns a list of opportunities)
+    # start by calling get_situation (which returns a turning point), 
+    # and run_situation (which alters character and returns a list of opportunities)
     #
-    # populate the list of opportunities from the bottom with the turning_point, 
+    # populate the list of opportunities from the bottom with the situation, 
     # then pull all available opportunities and fill out the rest from the top as follows:
     #
     # 1. choose continuation of previous career
@@ -299,6 +309,8 @@ def get_opportunities(character):
     # 3. choose a random lifepath of medium or higher risk
     #    
     # 4. choose a random lifepath of high risk
+    # 
+    # return list of opportunity ids
 
 def run_opportunity(opportunity, character):
     0
@@ -306,24 +318,8 @@ def run_opportunity(opportunity, character):
     # should change character's lifepath, meaning the next call of
     # get_events(character) should give the right events.
 
+    # NOTE TO SELF - rewrite choice descriptions to be more personal and evocative
 
-def decision(character):
-    0
-    # logic for calling and resolving decisions
-    # each should increase age by 1
-    # 
-    # get list of possible decisions based on character setting, and choose one
-    # get default options
-    # get list of possible other options, based on character lifepath/skills/traits/etc
-    # choose one or two of these
-    # present all as options
-
-    # player picks one. push changes to character. keep new lifepath option new list
-    # get list of possible next lifepaths based on character setting, and add a few of them to the list
-    # present list of lifepath choices
-    # player picks one
-    # push change to character
-    # end decision
 
 def end_game():
     write("Game Shutting Down...")
@@ -374,6 +370,10 @@ def write_loss_failed(text):
     elif mode == 'web':
         0
 
+
+
+
+
 # ---------------- GAME START ---------------- #
 
 if __name__ == "__main__":
@@ -396,12 +396,12 @@ if __name__ == "__main__":
         # ---------------- CLOCK START ---------------- #
         # ----- Runs the game-loop every interval ----- #
 
-        game_length = get_game_length()
+        # game_length = get_game_length()
 
         # write(get_character_description(main_character))
 
-        # interval = 1 # 1 second
-        interval = 10 # 10 seconds
+        interval = 1 # 1 second
+        # interval = 10 # 10 seconds
         # interval = 60 # 1 minute
         elapsed = 0
         clock_running = True
@@ -423,7 +423,7 @@ if __name__ == "__main__":
             #   - if just started game (lifepath: newborn), set to baby and make custom baby events
             #   - next time, switch to relevatn kid lifepath, get_events for the kid lifepath
             #   - subsequent times: 
-            #     - run a turning point
+            #     - run a situation
             #     - set up opportunity list
             #     - have player pick and resolve one of those opportunities
             #     - get_events for the new lifepath
@@ -441,9 +441,16 @@ if __name__ == "__main__":
                     kid_lifepath = kid_lifepath_from_setting(main_character.setting)
                     main_character.change_lifepath(kid_lifepath)
                     events_list = get_events(main_character)
-
-                # if kid or adult, player makes decision and chooses new lifepath
+                # if age is super old, run postscript
+                elif main_character.age >= 60:
+                    write("Grown to adult.") # end game for now
+                    game_running = end_game()
+                # otherwise, game runs a situation and then offers a choice of opportunities
                 else:
+                    situation = get_situation(main_character.setting)
+                    run_situation(situation, main_character)
+                    get_opportunities(situation, main_character)
+                    events_list = get_events(main_character)
                     write("Grown to adult.") # end game for now
                     game_running = end_game()
                 
