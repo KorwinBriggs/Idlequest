@@ -29,3 +29,6 @@ def read(text, choice_array=None):
         return Prompt.ask(f"\n{text}", choices=choice_array)
     else:
         return Prompt.ask(f"\n{text}")
+    
+def write_error(text):
+    return console.print(f"\n[red3]{text}")
