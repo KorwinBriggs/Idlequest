@@ -61,7 +61,6 @@ class character:
 
         self.seen_opportunities = []
 
-
     def update_stats(self, stats_dict):
         try:
             return_list = []
@@ -111,6 +110,7 @@ class character:
             return return_list
         except Exception as e:
             print(f"Error updating character stats: {e}")
+
 
     def gain_skill(self, skill_id, num = 1):
         try:
@@ -169,7 +169,6 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         except Exception as e:
             print(f"Error adding ability {ability_id} to character: {e}")
-
 
     def lose_ability(self, ability_id, num = 1):
         try:
@@ -394,7 +393,6 @@ class character:
 
         except Exception as e:
             print(f"Error moving character to lifepath {lifepath_id}: {e}")
-        
 
     def __character_creation_pronouns(self, name, gender):
         if gender == "male":
