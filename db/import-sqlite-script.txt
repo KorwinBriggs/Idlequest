@@ -85,8 +85,10 @@ CREATE TABLE keepsakes(
 CREATE TABLE events(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
-   prereqs TEXT NOT NULL,
-   test_skill_id TEXT,
+   prereq_type TEXT NOT NULL,
+   prereq_id TEXT NOT NULL,
+   test_type TEXT,
+   test_id TEXT,
    difficulty INT NOT NULL,
    setup TEXT NOT NULL,
    success_description TEXT,
@@ -98,7 +100,8 @@ CREATE TABLE events(
 CREATE TABLE opportunities(
    id TEXT PRIMARY KEY,
    prereq_type TEXT NOT NULL,
-   prereq TEXT NOT NULL,
+   prereq_id TEXT NOT NULL,
+   continuation INTEGER NOT NULL,
    choice_description TEXT NOT NULL,
    motivations TEXT,
    abilities TEXT,
