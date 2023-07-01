@@ -154,7 +154,7 @@ class character:
     def gain_ability(self, ability_id, num = 1):
         try:
             if ability_id not in self.abilities:
-                raise Exception(f"Could not find skill: {ability_id}")
+                raise Exception(f"Could not find ability: {ability_id}")
 
             stat, change, success, message = 'ability', 'gain', True, ''
             self.abilities[ability_id]['rank'] += num
@@ -173,7 +173,7 @@ class character:
     def lose_ability(self, ability_id, num = 1):
         try:
             if ability_id not in self.abilities:
-                raise Exception(f"Could not find skill: {ability_id}")
+                raise Exception(f"Could not find ability: {ability_id}")
             
             stat, change, success, message = 'ability', 'loss', True, ''
             self.abilities[ability_id]['rank'] -= num
