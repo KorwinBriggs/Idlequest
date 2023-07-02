@@ -36,130 +36,97 @@ mode = args.mode
 db = sqlite3.connect("db/gamedata.db") 
 
 
-def create_character(**args):
-    if mode == 'cli':
-        return __create_character_cli()
-    elif mode == 'web':
-        return __create_character_web()
-
-def __create_character_cli():
+def create_character():
     # Prompts for sex, name, and setting, and returns a character with those attributes
     
-    write('Screaming, quiet, a light slap, and a long, high-pitched cry. A baby is born!')
+    console.write('Screaming, quiet, a light slap, and a long, high-pitched cry. A baby is born!')
     sex, name, setting = None, None, None
 
     while sex == None:
-        # sex_input = read('But what is the sex? M/F ')
+        # sex_input = console.read('But what is the sex? M/F ')
         sex_input = console.read('But what is the sex? M/F')
+        console.write(sex_input)
         if sex_input == 'm' or sex_input == 'M' or sex_input == 'male' or sex_input == 'Male':
-            write('Aha! A boy!')
+            console.write('Aha! A boy!')
             sex = 'male'
         elif sex_input == 'f' or sex_input == 'F' or sex_input == 'female' or sex_input == 'Female':
-            write('Aha! A girl!')
+            console.write('Aha! A girl!')
             sex = 'female'
-        else: write('...')
+        else: console.write('...')
 
     while name == None:
-        name_input = read(f'Hmm...what shall we call ' + ('him' if sex == 'male' else 'her') + '?').strip()
-        # name_input = read(f'Hmm...and what will your name be, little one?')
+        name_input = console.read(f'Hmm...what shall we call ' + ('him' if sex == 'male' else 'her') + '?').strip()
+        # name_input = console.read(f'Hmm...and what will your name be, little one?')
         if not name_input == '':
             name = name_input.capitalize()
-            write(f'Yes, ' + ('he' if sex == 'male' else 'she') + f' looks like a {name}.')
+            console.write(f'Yes, ' + ('he' if sex == 'male' else 'she') + f' looks like a {name}.')
         else:
-            write('...')
+            console.write('...')
 
     while setting == None:
-        write(f'And into what sort of life has {name} been born? (Choose by entering a number)')
-        write('1. A community of peasants?')
-        write('2. A small town in the countryside?')
-        write('3. A large, bustling city?')
-        write('4. A nomadic band of herders?')
-        write('5. A powerful noble family?')
-        write('6. Alone and impoverished?')
-        setting_input = read('')
+        console.write(f'And into what sort of life has {name} been born? (Choose by entering a number)')
+        console.write('1. A community of peasants?')
+        console.write('2. A small town in the countryside?')
+        console.write('3. A large, bustling city?')
+        console.write('4. A nomadic band of herders?')
+        console.write('5. A powerful noble family?')
+        console.write('6. Alone and impoverished?')
+        setting_input = console.read('')
         if setting_input == '1' or setting_input == '2' or setting_input == '3' or setting_input == '4' or setting_input == '5' or setting_input == '6' :
             if setting_input == '1':
                 setting = 'peasant'
-                write("A simple beginning, to be sure, but even the great old oak started life toiling in the dirt.")
+                console.write("A simple beginning, to be sure, but even the great old oak started life toiling in the dirt.")
             else:
-                write('(Sorry - only the first option is available for now)')
+                console.write('(Sorry - only the first option is available for now)')
         else:
-            write('...')
+            console.write('...')
 
     return character(name, sex, setting)
 
-def __create_character_web(**args):
-    # Like create_character_cli, but sends and returns json instead of cli prompts
-    0
-
-
 def get_game_length():
-    if mode == 'cli':
-        return __get_game_length_cli()
-    elif mode == 'web':
-        return __get_game_length_web()
-    
-def __get_game_length_cli():
-    
     game_length = None
     while game_length == None:
-        length_input = read(f"Choose game length (6, 8, 10, or 12 hours)")
+        length_input = console.read(f"Choose game length (6, 8, 10, or 12 hours)")
         if length_input == '6':
             game_length = 6 * 60
-            write("6 hour game started.")
+            console.write("6 hour game started.")
         elif length_input == '8':
             game_length = 8 * 60
-            write("8 hour game started.")
+            console.write("8 hour game started.")
         elif length_input == '10':
             game_length = 10 * 60
-            write("10 hour game started.")
+            console.write("10 hour game started.")
         elif length_input == '12':
             game_length = 12 * 60
-            write("12 hour game started.")
+            console.write("12 hour game started.")
         else:
-            write("...")
-
-def __get_game_length_web():
-    0
-
+            console.write("...")
 
 def get_character_description(character):
-    if mode == 'cli':
-        return __get_character_description_cli(character)
-    elif mode == 'web':
-        return __get_character_description_web(character)
-    
-def __get_character_description_cli(character):
-
     description = (f"{character.name} is {character.age} years old."
           + f"\n{character.sub.capitalize()} has {character.appearanceToString()}."
     )
     return description
-
-def __get_character_description_web(character):
-    0
-
 
 def baby_lifepath_from_setting(setting):
     # takes setting, returns the kid lifepath there
     try:
         db_lifepath = pd.read_sql_query( f"SELECT id FROM lifepaths WHERE setting = '{setting}' AND baby = 'true'", db)
         if len(db_lifepath) == 0:
-            raise Exception(write_error("Couldn't find baby lifepath"))
+            raise Exception(console.write_error("Couldn't find baby lifepath"))
         return db_lifepath['id'].values[0]
     except Exception as e:
-        write_error(f"Error retrieving baby lifepath from setting {setting}: {e}") 
+        console.write_error(f"Error retrieving baby lifepath from setting {setting}: {e}") 
 
 def kid_lifepath_from_setting(setting):
     # takes setting, returns the kid lifepath there
     try:
         db_lifepath = pd.read_sql_query( "SELECT id FROM lifepaths WHERE setting = '" + setting + "' AND kid = 'true'", db)
         if len(db_lifepath) == 0:
-            raise Exception(write_error("Couldn't find kid lifepath"))
+            raise Exception(console.write_error("Couldn't find kid lifepath"))
         return db_lifepath['id'].values[0]
     except Exception as e:
-        write_error(f"Error retrieving kid lifepath from setting {setting}: {e}") 
-
+        console.write_error(f"Error retrieving kid lifepath from setting {setting}: {e}") 
 
 def get_baby_events(character):
     try:
@@ -201,15 +168,15 @@ def get_baby_events(character):
         if normal_chance == 1:
             db_baby_trait_events = pd.read_sql_query( "SELECT * FROM events WHERE id = 'baby_normal'", db)
         else:
-            db_baby_trait_events = pd.read_sql_query( "SELECT * FROM events WHERE prereqs = 'lifepaths: baby'", db)
+            db_baby_trait_events = pd.read_sql_query( "SELECT * FROM events WHERE prereq_type = 'lifepath' AND prereq_id = 'baby'", db)
         # choose random baby trait event from list
-        baby_trait_event = random_row_to_dict(db_baby_trait_events).to_dict()
+        baby_trait_event = random_row_to_dict(db_baby_trait_events)
         events.append(baby_trait_event)
 
         return events
     
     except Exception as e:
-        write_error(f"Error creating list of baby events: {e}") 
+        console.write_error(f"Error creating list of baby events: {e}") 
 
 def get_events(character):
     try:
@@ -218,11 +185,11 @@ def get_events(character):
 
         # get all events that match character - lifepath, settings (maybe in future, other prereqs)
         query = f'SELECT * FROM events WHERE '
-        query += f'(prereq_type = "lifepath" AND prereq_id = {character.lifepath[id]})'
-        query += f'(prereq_type = "setting" AND prereq_id = {character.setting})'
+        query += f'prereq_type = "lifepath" AND prereq_id = "{character.lifepath["id"]}"'
+        query += f'OR prereq_type = "setting" AND prereq_id = "{character.setting}"'
         db_possible_events = pd.read_sql_query(query, db)
         if len(db_possible_events) < int(character.lifepath['years']):
-            raise Exception(write_error("Couldn't find enough events for character."))
+            raise Exception(console.write_error("Couldn't find enough events for character."))
 
         # fill events list with one event per year
         while len(event_dicts) < int(character.lifepath['years']):
@@ -234,7 +201,7 @@ def get_events(character):
 
         return event_dicts
     except Exception as e:
-        write_error(f"Error compiling list of events: {e}") 
+        console.write_error(f"Error compiling list of events: {e}") 
 
 def run_event(event_dict, character):
 
@@ -252,30 +219,29 @@ def run_event(event_dict, character):
                 event_string += f" {event_dict['failure_description']}"
                 effects = gameparser.parse_effects(event_dict['failure_effect'])
 
-            write(gameparser.parse_pronouns(event_string, character))
+            console.write(gameparser.parse_pronouns(event_string, character))
 
             run_effects(effects, character)
     except Exception as e:
-        write_error(f"Error running event {event_dict['id']}: {e}") 
+        console.write_error(f"Error running event {event_dict['id']}: {e}") 
 
 def run_effects(effects, character):
-    # update character stats with effects, write results
+    # update character stats with effects, console.write results
     try:
         effects_results = character.update_stats(effects)
-        for result in effects_results: # write in the correct color
+        for result in effects_results: # console.write in the correct color
             if result['change'] == 'gain':
                 if result['success'] == True:
-                    write_gain(result['message'])
+                    console.write_gain(result['message'])
                 else:
-                    write_gain_failed(result['message'])
+                    console.write_gain_failed(result['message'])
             elif result['change'] == 'loss':
                 if result['success'] == True:
-                    write_loss(result['message'])
+                    console.write_loss(result['message'])
                 else:
-                    write_loss_failed(result['message'])
+                    console.write_loss_failed(result['message'])
     except Exception as e:
-        write_error(f"Error processing list of effects {effects}: {e}") 
-
+        console.write_error(f"Error processing list of effects {effects}: {e}") 
 
 def get_situation(setting):
     # choose random turning point from setting and return it
@@ -283,19 +249,18 @@ def get_situation(setting):
         db_situations = pd.read_sql_query(f"SELECT * FROM situations WHERE setting = '{setting}'", db)
         return random_row_to_dict(db_situations)
     except Exception as e:
-        write_error(f"Error getting situation: {e}") 
+        console.write_error(f"Error getting situation: {e}") 
 
 def run_situation(situation_dict, character):
     # print situation info. Originally this was going to be more involved, 
     # but most of the remaining logic is now in get_opportunities
     try:
-        write(situation_dict['headline'])
-        write(gameparser.parse_pronouns(situation_dict['description'], character))
+        console.write(situation_dict['headline'])
+        console.write(gameparser.parse_pronouns(situation_dict['description'], character))
         effects = gameparser.parse_effects(situation_dict['effects'])
         run_effects(effects, character)
     except Exception as e:
-        write_error(f"Error running situation {situation_dict['id']}: {e}") 
-
+        console.write_error(f"Error running situation {situation_dict['id']}: {e}") 
 
 def get_opportunities(situation_dict, character):
     # Returns list of four opportunity dicts, each including a sub-dict with info on why it was picked
@@ -332,9 +297,9 @@ def get_opportunities(situation_dict, character):
         situation_opportunities_to_add = situation_dict['lifepath_replacements']
         normal_opportunities_to_add = number_of_choices - situation_opportunities_to_add
         if len(normal_opportunities) + len(continuation_opportunity) < normal_opportunities_to_add:
-            raise Exception(write_error("Not enough normal/continuation opportunities to fill out list."))
+            raise Exception(console.write_error("Not enough normal/continuation opportunities to fill out list."))
     except Exception as e:
-        write_error(f"Error retrieving opportunities from database: {e}") 
+        console.write_error(f"Error retrieving opportunities from database: {e}") 
        
     try:
         # If there's space in the list, add a continuation opportunity, if available
@@ -376,7 +341,7 @@ def get_opportunities(situation_dict, character):
                 del normal_opportunities[random_index]
                 normal_opportunities_to_add -= 1              
         except Exception as e:
-            write_error(f"Error adding random opportunities to choice list: {e}")
+            console.write_error(f"Error adding random opportunities to choice list: {e}")
             traceback.print_exc()
         
         # NEXT, do the same with the situation choices:
@@ -412,13 +377,13 @@ def get_opportunities(situation_dict, character):
                 del situation_opportunities[random_index]
                 situation_opportunities_to_add -= 1              
         except Exception as e:
-            write_error(f"Error adding random opportunities to choice list: {e}")
+            console.write_error(f"Error adding random opportunities to choice list: {e}")
             traceback.print_exc()
 
         return opportunity_choices
 
     except Exception as e:
-        write_error(f"Error populating list of opportunities: {e}") 
+        console.write_error(f"Error populating list of opportunities: {e}") 
         
 def get_character_ranks_for_opportunity(opportunity_dict, character):
     # parses the abilities, skills, and motivations from the opportunity_dict,
@@ -452,10 +417,8 @@ def get_character_ranks_for_opportunity(opportunity_dict, character):
         return character_ranks
     
     except Exception as e:
-        write_error(f"Error getting character ranks in abilities/skills/motivations for opportunity {opportunity_dict['id']}: {e}") 
+        console.write_error(f"Error getting character ranks in abilities/skills/motivations for opportunity {opportunity_dict['id']}: {e}") 
 
-
-# REWRITE THE FOLLOWING TWO FUNCTIONS WHEN I'M LESS BRAINDEAD.
 def get_best_fit_opportunity(opportunity_list_with_character_ranks):
     # Returns the opportunity that best matches character's abilities and skills
     # (Specifically, best average rank of top two matching abilities and/or skills)
@@ -503,7 +466,7 @@ def get_best_fit_opportunity(opportunity_list_with_character_ranks):
         best_match = best_matches[random.randint(0, len(best_matches)-1)]
         return(best_match)
     except Exception as e:
-        write_error(f"Error adding best skill/ability match to list of opportunities: {e}") 
+        console.write_error(f"Error adding best skill/ability match to list of opportunities: {e}") 
 
 def get_most_desired_opportunity(opportunity_list_with_character_ranks):
     # Returns best match to character motivations
@@ -533,9 +496,8 @@ def get_most_desired_opportunity(opportunity_list_with_character_ranks):
         best_match = best_matches[random.randint(0, len(best_matches)-1)]
         return(best_match)
     except Exception as e:
-        write_error(f"Error adding best motivation match to list of opportunities: {e}") 
+        console.write_error(f"Error adding best motivation match to list of opportunities: {e}") 
         
-
 def choose_opportunity(opportunity_dict_list, character):
     0
     # lay out list
@@ -546,11 +508,10 @@ def run_opportunity(opportunity_dict, character):
     # should change character's lifepath, meaning the next call of
     # get_events(character) should give the right events.
 
-    # NOTE TO SELF - rewrite choice descriptions to be more personal and evocative
-
+    # NOTE TO SELF - reconsole.write choice descriptions to be more personal and evocative
 
 def end_game():
-    write("Game Shutting Down...")
+    console.write("Game Shutting Down...")
     return False
 
 #---------------- HELPER FUNCTIONS ----------------#
@@ -561,16 +522,16 @@ def event_to_dict(event_id_string):
         db_event = pd.read_sql_query(f"SELECT * FROM events WHERE id = '{event_id_string}'", db)
         return db_event.iloc[0].to_dict()
     except Exception as e:
-        write_error(f"Error retrieiving event {event_id_string}: {e}") 
+        console.write_error(f"Error retrieiving event {event_id_string}: {e}") 
 
 def row_to_dict(dataframe):
     # takes single row dataframe, returns dict
     try:
         if len(dataframe) > 1:
-            raise Exception(write_error(f'Dataframe of more than one row passed to row_to_dict:\n{dataframe}'))
+            raise Exception(console.write_error(f'Dataframe of more than one row passed to row_to_dict:\n{dataframe}'))
         return dataframe.iloc[0].to_dict()
     except Exception as e:
-        write_error(f"Error converting dataframe to dict: {e}") 
+        console.write_error(f"Error converting dataframe to dict: {e}") 
 
 def random_row_to_dict(dataframe):
     # takes multi-row dataframe, returns single random row's dict
@@ -578,12 +539,12 @@ def random_row_to_dict(dataframe):
         random_row = random.randint(0, len(dataframe)-1)
         return dataframe.iloc[random_row].to_dict()
     except Exception as e:
-        write_error(f"Error converting dataframe to dict: {e}") 
+        console.write_error(f"Error converting dataframe to dict: {e}") 
 
 def convert_motivation(motivation, rank=0):
     db_motivation = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'")
     if len(db_motivation) == 0:
-        raise Exception(write_error(f"Error converting motivation: '{motivation}' not found in database"))
+        raise Exception(console.write_error(f"Error converting motivation: '{motivation}' not found in database"))
     motivation_dict = db_motivation.to_dict(orient='records')
     if motivation == motivation_dict['high']:
         return motivation_dict['id'], rank
@@ -596,59 +557,17 @@ def convert_motivation(motivation, rank=0):
             return motivation_dict['low'], rank * -1
 
 
-# write and read are helper functions.
-# they write and read to cli or webhooks, depending on the program's mode
-def write(text):
-    if mode == 'cli':
-        return console.write(text)
-    elif mode == 'web':
-        0
-
-def read(text, choices=None):
-    if mode == 'cli':
-        return console.read(text, choices)
-    elif mode == 'web':
-        0
-    
-def write_gain(text):
-    if mode == 'cli':
-        return console.write_gain(text)
-    elif mode == 'web':
-        0
-
-def write_gain_failed(text):
-    if mode == 'cli':
-        return console.write_gain_failed(text)
-    elif mode == 'web':
-        0
-
-def write_loss(text):
-    if mode == 'cli':
-        return console.write_loss(text)
-    elif mode == 'web':
-        0
-
-def write_loss_failed(text):
-    if mode == 'cli':
-        return console.write_loss_failed(text)
-    elif mode == 'web':
-        0
-
-def write_error(text):
-    if mode == 'cli':
-        console.write_error(text) 
-        traceback.print_exc()
-
-
+# console.write and console.read are helper functions.
+# they console.write and console.read to cli or webhooks, depending on the program's mode
 
 
 if __name__ == "__main__":
 
     testperson = character("Testperson", "male", "peasant")
-    write(f"Name: {testperson.name}")
+    console.write(f"Name: {testperson.name}")
 
     testperson.change_lifepath("kid_peasant")
-    write(f"Lifepath: {testperson.lifepath}")
+    console.write(f"Lifepath: {testperson.lifepath}")
 
     run_event(event_to_dict("peasant_kid_first_plant"), testperson)
     run_event(event_to_dict("peasant_kid_herding"), testperson)
@@ -657,16 +576,20 @@ if __name__ == "__main__":
     run_event(event_to_dict("peasant_kid_trapping"), testperson)
     run_event(event_to_dict("peasant_kid_bully"), testperson)
     testperson.gain_motivation('intellectual')
+    testperson.gain_ability('intellect')
+    testperson.gain_ability('intellect')
+    testperson.gain_ability('intellect')
+    testperson.gain_ability('intellect')
 
-    write(f"Motivations: {testperson.motivations}")
-    write(f"Abilities: {testperson.abilities}")
-    write(f"Skills: {testperson.skills}")
+    console.write(f"Motivations: {testperson.motivations}")
+    console.write(f"Abilities: {testperson.abilities}")
+    console.write(f"Skills: {testperson.skills}")
 
     situation = get_situation("peasant") # at this time, only one possible result: peasant_fort_construction
-    write(f"Situation: {situation}")
+    console.write(f"Situation: {situation}")
     run_situation(situation, testperson)
 
     opportunities = get_opportunities(situation, testperson)
-    write("Opportunities:")
+    console.write("Opportunities:")
     for opportunity in opportunities:
-        write(f"- {opportunity['id']}")
+        console.write(f"- {opportunity['id']}")

@@ -261,6 +261,7 @@ class character:
             stat, change, success, message = 'trait', 'gain', True, ''
 
             if trait_id not in self.traits:
+                # get trait info from 
                 db_trait = pd.read_sql_query(f"SELECT * FROM traits WHERE id = '{trait_id}'", db)
                 if len(db_trait) == 0:
                     raise Exception(f"Could not find trait: {trait_id}")
