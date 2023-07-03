@@ -581,6 +581,9 @@ if __name__ == "__main__":
     testperson.gain_ability('intellect')
     testperson.gain_ability('intellect')
     testperson.gain_ability('intellect')
+    testperson.gain_ability('strength')
+    testperson.gain_trait('strong')
+    testperson.gain_trait('shy')
 
     console.write(f"Motivations: {testperson.motivations}")
     console.write(f"Abilities: {testperson.abilities}")
@@ -600,3 +603,7 @@ if __name__ == "__main__":
     console.write(f"Abilities: {testperson.abilities}")
     console.write(f"Skills: {testperson.skills}")
     console.write(f"Traits: {testperson.traits}")
+
+    console.write(f"Current Strength: {testperson.get_ability('strength')}")
+    console.write(f"Current Sociability: {testperson.get_motivation('social')}")
+    console.write(f"Current Solitariness: {testperson.get_motivation('solitary')}")

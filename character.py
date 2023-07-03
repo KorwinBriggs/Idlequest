@@ -3,6 +3,7 @@ import random
 import numpy as np
 import pandas as pd
 import console
+import gameparser
 
 db = sqlite3.connect("db/gamedata.db")
 
@@ -118,6 +119,41 @@ class character:
         except Exception as e:
             console.write_error(f"Error updating character stats: {e}")
 
+    def get_skill(self, skill_id):
+        # returns skill dict like
+        # {'farming': { ((id, name, etc)), 'rank': 1, 'modifiers': {traits: {green_thumb: 2}, keepsakes: {family_farm:1} }, 'total': 4 }
+        try:
+            # check that skill exists
+            if skill_id not in self.skills:
+                raise Exception(console.write_error(f'Error getting skill: {skill_id} not found in character skills.'))
+            else:
+                # establish return_dict, add empty traits/keepsakes sections, default total to character skill ranks
+                return_dict = self.skills[skill_id]
+                return_dict['modifiers'] = {'traits': {}, 'keepsakes': {}}
+                return_dict['total'] = return_dict['rank'] 
+
+                # go through each trait and compile relevant modifiers
+                for trait in self.traits: # ie 'green_thumb'
+                    if 'skills' in self.traits[trait]['modifiers']: # check it has a skills section
+                        if skill_id in self.traits[trait]['modifiers']['skills']: # ie farming
+                            # if trait modifies the skill in question, add ie {'green_thumb': 1} to return_dict modifiers trait list
+                            return_dict['modifiers']['traits'][trait] = self.traits[trait]['modifiers']['skills'][skill_id]
+                            # and update the total
+                            return_dict['total'] += self.traits[trait]['modifiers']['skills'][skill_id]
+
+                # do same for keepsakes
+                for keepsake in self.keepsakes: # ie 'family_farm'
+                    if 'skills' in self.keepsakes[keepsake]['modifiers']: # check it has a skills section
+                        if skill_id in self.keepsakes[keepsake]['modifiers']['skills']: # ie farming
+                            # if trait modifies the skill in question, add ie {'family_farm': 1} to return_dict modifiers trait list
+                            return_dict['modifiers']['keepsakes'][keepsake] = self.keepsakes[keepsake]['modifiers']['skills'][skill_id]
+                            # and update the total
+                            return_dict['total'] += self.keepsakes[keepsake]['modifiers']['skills'][skill_id]
+                
+                return return_dict
+            
+        except Exception as e:
+            console.write_error(f"Error getting character skill level for {skill_id}: {e}")             
 
     def gain_skill(self, skill_id, num = 1):
         try:
@@ -132,6 +168,8 @@ class character:
                 success = False
                 message = f"Skill: {self.skills[skill_id]['name'].capitalize()} can't go higher!"
             else:
+                # message = ''
+                # message.append('+') for i in range(num)
                 message = f"+ Skill: {self.skills[skill_id]['name'].capitalize()}"
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
@@ -157,6 +195,43 @@ class character:
     
         except Exception as e:
             console.write_error(f"Error removing skill {skill_id} from character: {e}")
+
+    def get_ability(self, ability_id):
+        # returns ability dict like
+        # {'farming': { ((id, name, etc)), 'rank': 1, 'modifiers': {traits: {green_thumb: 2}, keepsakes: {family_farm:1} }, 'total': 4 }
+        try:
+            # check that ability exists
+            if ability_id not in self.abilities:
+                raise Exception(console.write_error(f'Error getting ability: {ability_id} not found in character abilitys.'))
+            else:
+                # establish return_dict, add empty traits/keepsakes sections, default total to character ability ranks
+                return_dict = self.abilities[ability_id]
+                return_dict['modifiers'] = {'traits': {}, 'keepsakes': {}}
+                return_dict['total'] = return_dict['rank'] 
+
+                # go through each trait and compile relevant modifiers
+                for trait in self.traits: # ie 'green_thumb'
+                    if 'abilities' in self.traits[trait]['modifiers']: # check it has a abilities section
+                        if ability_id in self.traits[trait]['modifiers']['abilities']: # ie farming
+                            # if trait modifies the ability in question, add ie {'green_thumb': 1} to return_dict modifiers trait list
+                            return_dict['modifiers']['traits'][trait] = self.traits[trait]['modifiers']['abilities'][ability_id]
+                            # and update the total
+                            return_dict['total'] += self.traits[trait]['modifiers']['abilities'][ability_id]
+
+                # do same for keepsakes
+                for keepsake in self.keepsakes: # ie 'family_farm'
+                    if 'abilities' in self.keepsakes[keepsake]['modifiers']: # check it has a abilities section
+                        if ability_id in self.keepsakes[keepsake]['modifiers']['abilities']: # ie farming
+                            # if trait modifies the ability in question, add ie {'family_farm': 1} to return_dict modifiers trait list
+                            return_dict['modifiers']['keepsakes'][keepsake] = self.keepsakes[keepsake]['modifiers']['abilities'][ability_id]
+                            # and update the total
+                            return_dict['total'] += self.keepsakes[keepsake]['modifiers']['abilities'][ability_id]
+                
+                return return_dict
+            
+        except Exception as e:
+            console.write_error(f"Error getting character ability level for {ability_id}: {e}")             
+
 
     def gain_ability(self, ability_id, num = 1):
         try:
@@ -196,10 +271,67 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing ability {ability_id} from character: {e}")
 
+    def get_motivation(self, motivation):
+        # returns relevant motivation dict like
+        # {'farming': { ((id, name, etc)), 'rank': 1, 'modifiers': {traits: {green_thumb: 2}, keepsakes: {family_farm:1} }, 'total': 4 }
+        try:
+            # get motivation_id from motivation name
+            motivation_db = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'", db)
+            if len(motivation_db) == 0:
+                raise Exception(f"Could not find motivation: {motivation}")
+            motivation_dict = motivation_db.to_dict(orient="records")[0]
+            motivation_id = motivation_dict['id']
+            motivation_low = motivation_dict['low']
+            motivation_high = motivation_dict['high']
+
+            # establish return_dict, add empty traits/keepsakes sections, default total to character motivation rank
+            return_dict = self.motivations[motivation_id]
+            return_dict['modifiers'] = {'traits': {}, 'keepsakes': {}}
+            return_dict['total'] = return_dict['rank']
+
+            # go through each trait and compile relevant modifiers
+            for trait in self.traits: # ie 'shy'
+                if 'motivations' in self.traits[trait]['modifiers']: # if it has a motivations section
+                    # if that contains the id or high level (ie 'socialbility' or 'social')
+                    if (motivation_id in self.traits[trait]['modifiers']['motivations']) or (motivation_high in self.traits[trait]['modifiers']['motivations']):
+                        # then add ie {'sociability': 1} to return_dict modifiers
+                        return_dict['modifiers']['traits'][trait] = self.traits[trait]['modifiers']['motivations'][motivation_id]
+                        # and add it to the total
+                        return_dict['total'] += self.traits[trait]['modifiers']['motivations'][motivation_id]
+                    # if it contains the low level version (ie 'solitary')
+                    elif (motivation_low in self.traits[trait]['modifiers']['motivations']):
+                        # do as above, but turn plusses to minuses and vice versa
+                        return_dict['modifiers']['traits'][trait] = self.traits[trait]['modifiers']['motivations'][motivation_id] * -1
+                        # and add it to the total
+                        return_dict['total'] -= self.traits[trait]['modifiers']['motivations'][motivation_id]
+
+            # then do same for keepsakes
+            for keepsake in self.keepsakes: # ie 'shy'
+                if 'motivations' in self.keepsakes[keepsake]['modifiers']: # if it has a motivations section
+                    # if that contains the id or high level (ie 'socialbility' or 'social')
+                    if (motivation_id in self.keepsakes[keepsake]['modifiers']['motivations']) or (motivation_high in self.keepsakes[keepsake]['modifiers']['motivations']):
+                        # then add ie {'sociability': 1} to return_dict modifiers
+                        return_dict['modifiers']['keepsakes'][keepsake] = self.keepsakes[keepsake]['modifiers']['motivations'][motivation_id]
+                        # and add it to the total
+                        return_dict['total'] += self.keepsakes[keepsake]['modifiers']['motivations'][motivation_id]
+                    # if it contains the low level version (ie 'solitary')
+                    elif (motivation_low in self.keepsakes[keepsake]['modifiers']['motivations']):
+                        # do as above, but turn plusses to minuses and vice versa
+                        return_dict['modifiers']['keepsakes'][keepsake] = self.keepsakes[keepsake]['modifiers']['motivations'][motivation_id] * -1
+                        # and add it to the total
+                        return_dict['total'] -= self.keepsakes[keepsake]['modifiers']['motivations'][motivation_id]
+                
+            # now translate it back
+            return return_dict
+
+        except Exception as e:
+            console.write_error(f"Error getting character motivation level for {motivation_id}: {e}") 
+
+
     def gain_motivation(self, motivation, num = 1):
         try:
             # find line in db with motivation name as high or low value
-            motivation_db = pd.read_sql_query(f"SELECT * FROM motivations WHERE low = '{motivation}' OR high = '{motivation}'", db)
+            motivation_db = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'", db)
             if len(motivation_db) == 0:
                 raise Exception(f"Could not find motivation: {motivation}")
             
@@ -208,7 +340,7 @@ class character:
             motivation_id = motivation_dict['id']
 
             # add or remove, as needed
-            if motivation == motivation_dict['high']:
+            if motivation == motivation_dict['high'] or motivation == motivation_dict['id']:
                 self.motivations[motivation_id]['rank'] += num
             elif motivation == motivation_dict['low']:
                 self.motivations[motivation_id]['rank'] -= num
@@ -232,7 +364,7 @@ class character:
     def lose_motivation(self, motivation, num = 1):
         try:
             # find line in db with motivation name as high or low value
-            motivation_db = pd.read_sql_query(f"SELECT * FROM motivations WHERE low = '{motivation}' OR high = '{motivation}'", db)
+            motivation_db = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'", db)
             if len(motivation_db) == 0:
                 raise Exception(f"Could not find motivation: {motivation}")
             
@@ -241,7 +373,7 @@ class character:
             motivation_id = motivation_dict['id']
 
             # add or remove, as needed
-            if motivation == motivation_dict['high']:
+            if motivation == motivation_dict['high'] or motivation == motivation_dict['id']:
                 self.motivations[motivation_id]['rank'] -= num
             elif motivation == motivation_dict['low']:
                 self.motivations[motivation_id]['rank'] += num
@@ -273,7 +405,10 @@ class character:
                 if len(db_trait) == 0:
                     raise Exception(f"Could not find trait: {trait_id}")
                 trait_dict = db_trait.to_dict(orient='records')[0]
+
                 # get and parse modifier into trait['modifiers']
+                trait_dict['modifiers'] = gameparser.parse_items(trait_dict['modifiers'])
+
                 # save trait dict to traits
                 self.traits[trait_id] = trait_dict
                 message = f"Trait gained: {self.traits[trait_id]['name'].capitalize()}"
@@ -310,11 +445,16 @@ class character:
             stat, change, success, message = 'keepsake', 'gain', True, ''
 
             if keepsake_id not in self.keepsakes:
+                # get keepsake dict from db
                 db_keepsake = pd.read_sql_query(f"SELECT * FROM keepsakes WHERE id = '{keepsake_id}'", db)
                 if len(db_keepsake) == 0:
                     raise Exception(f"Could not find keepsake: {keepsake_id}")
-                
                 keepsake_dict = db_keepsake.to_dict(orient='records')[0]
+
+                # get and parse modifier into trait['modifiers']
+                keepsake_dict['modifiers'] = gameparser.parse_items(keepsake_dict['modifiers'])
+                
+                # save keepsake dict to keepsakes
                 self.keepsakes[keepsake_id] = keepsake_dict
                 message = f"Keepsake gained: {self.keepsake[keepsake_id]['name'].capitalize()}"
             else:

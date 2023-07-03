@@ -19,16 +19,8 @@ def parse_pronouns(string, character):
 
 def parse_effects(string):
     # for things like: "gainOne(skills: farming, plants_and_herbs), gainOne(motivations: dutiful, industrious, traditional, humble)"
-    result = {
-        'skills': {},
-        'traits': {},
-        'abilities': {},
-        'motivations': {},
-        'keepsakes': {},
-        'lifepaths': {},
-        'settings': {},
-        'appearances': {}
-    }
+    result = {}
+
     # divide string into list of words
     words_list = re.split(r'\(|\)|:\s|,\s', string)
 
@@ -43,6 +35,11 @@ def parse_effects(string):
 
         # parse subsection - ' '.join'ed list into string because parse_items requires string, not list
         items = (parse_items(' '.join(command_subsection))) 
+
+        # add necessary item_type sections to result dict
+        for item_type in items:
+            if item_type not in result:
+                result[item_type] = {}
 
         # if gain or lose, add all to result
         if command == 'lose' or command == 'gain':
@@ -86,16 +83,7 @@ def parse_effects(string):
 def parse_items(string):
     # for things like: "lifepaths: baby, skills: farming"
     # should return a series of dicts like {'skills': {'farming': 2, 'mining': -1} }
-    result = {
-        'skills': {},
-        'traits': {},
-        'abilities': {},
-        'motivations': {},
-        'keepsakes': {},
-        'lifepaths': {},
-        'settings': {},
-        'appearances': {}
-    }
+    result = {}
 
     # divide string into list of words
     words_list = re.split(r'\(|\)|:\s|,\s|\s', string)
@@ -106,6 +94,11 @@ def parse_items(string):
     for type_subsection in subsections_by_type:
         # get item type, then remove it from subsection list
         item_type = type_subsection[0]
+
+        # add item_type section to result
+        if item_type not in result:
+            result[item_type] = {}
+
         del type_subsection[0]
 
         # use parse_modifiers to get id and mod
@@ -173,3 +166,5 @@ if __name__ == "__main__":
     # # print(parse_items("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
     # print(parse_effects("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))
     
+
+    print(parse_items("motivations: adventurous"))

@@ -46,7 +46,7 @@ CREATE TABLE traits(
    name TEXT NOT NULL,
    category TEXT NOT NULL,
    source TEXT,
-   modifier TEXT,
+   modifiers TEXT,
    description TEXT,
    age INTEGER NOT NULL,
    scar INTEGER NOT NULL
@@ -77,9 +77,10 @@ CREATE TABLE lifepaths(
 CREATE TABLE keepsakes(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
-   type TEXT NOT NULL,
-   description TEXT,
-   effect TEXT
+   category TEXT NOT NULL,
+   source TEXT,
+   modifiers TEXT,
+   description TEXT
 );
 
 CREATE TABLE events(
