@@ -405,15 +405,15 @@ def get_character_ranks_for_opportunity(opportunity_dict, character):
         # make a dict containing the ranks the character has in those abilities/skills/motivations
         character_ranks = {'abilities':{}, 'skills':{}, 'motivations':{}}
         for ability in abilities_list:
-            character_ranks['abilities'][ability] = character.abilities[ability]['rank']
+            character_ranks['abilities'][ability] = character.get_ability(ability)['total']
         for skill in skills_list:
-            character_ranks['skills'][skill] = character.skills[skill]['rank']
+            character_ranks['skills'][skill] = character.get_skill(skill)['total']
         for motivation in motivations_list:
             for motivation_dict in character.motivations.values():
                 if motivation_dict['high'] == motivation:
-                    character_ranks['motivations'][motivation] = character.motivations[motivation_dict['id']]['rank']
+                    character_ranks['motivations'][motivation] = character.get_motivation(motivation_dict['id'])['total']
                 elif motivation_dict['low'] == motivation:
-                    character_ranks['motivations'][motivation] = character.motivations[motivation_dict['id']]['rank'] * -1
+                    character_ranks['motivations'][motivation] = character.get_motivation(motivation_dict['id'])['total'] * -1
         return character_ranks
     
     except Exception as e:
@@ -498,21 +498,21 @@ def get_most_desired_opportunity(opportunity_list_with_character_ranks):
     except Exception as e:
         console.write_error(f"Error adding best motivation match to list of opportunities: {e}") 
         
-def choose_opportunity(opportunity_dict_list, character):
+def choose_opportunity(opportunity_dict_list):
     0
+    # takes opportunity_dict_list, prints choices to screen, and returns the choice dict
     # lay out list
 
 def run_opportunity(opportunity_dict, character):
     0
     # run chosen opportunity, including any changes to character.
-    # should change character's lifepath, meaning the next call of
-    # get_events(character) should give the right events.
+    # returns opportunity's lifepath id, 
 
     # NOTE TO SELF - reconsole.write choice descriptions to be more personal and evocative
 
 def end_game():
     console.write("Game Shutting Down...")
-    return False
+    return False, False
 
 #---------------- HELPER FUNCTIONS ----------------#
 

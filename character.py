@@ -232,7 +232,6 @@ class character:
         except Exception as e:
             console.write_error(f"Error getting character ability level for {ability_id}: {e}")             
 
-
     def gain_ability(self, ability_id, num = 1):
         try:
             if ability_id not in self.abilities:
@@ -326,7 +325,6 @@ class character:
 
         except Exception as e:
             console.write_error(f"Error getting character motivation level for {motivation_id}: {e}") 
-
 
     def gain_motivation(self, motivation, num = 1):
         try:
@@ -526,7 +524,6 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing appearance {appearance_id} from character: {e}")
 
-
     def change_lifepath(self, lifepath_id):
         try:
             # push old lifepath details into history
@@ -580,13 +577,6 @@ class character:
         if len(db_skill) == 0:
             return None
         return True
-    
-    def __stat_return_dict(self, stat_type, up_down_none, message):
-        return {
-            'stat': stat_type,
-            'direction': up_down_none,
-            'message': message
-        }
 
     def appearanceToString(self):
         # build query from appearance ids
