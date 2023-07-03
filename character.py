@@ -2,6 +2,7 @@ import sqlite3
 import random
 import numpy as np
 import pandas as pd
+import console
 
 db = sqlite3.connect("db/gamedata.db")
 
@@ -61,55 +62,61 @@ class character:
 
         self.seen_opportunities = []
 
-    def update_stats(self, stats_dict):
+    def update_stats(self, stats_dict = {}):
+        # go through stats dict from parse_effects or parse_prereqs and update stats
+        # if called without dict, simply updates stats
+
+        result = {
+        'skills': {},
+        'traits': {},
+        'abilities': {},
+        'motivations': {},
+        'keepsakes': {},
+        'lifepaths': {},
+        'settings': {},
+        'appearances': {}
+        }
         try:
             return_list = []
-
-            if 'gain' in stats_dict:
-                gain = stats_dict['gain']
-                if 'abilities' in gain:
-                    for ability in gain['abilities']:
-                        return_list.append(self.gain_ability(ability))
-                if 'skills' in gain:
-                    for skill in gain['skills']:
-                        return_list.append(self.gain_skill(skill))
-                if 'traits' in gain:
-                    for trait in gain['traits']:
+            if 'skills' in stats_dict:
+                for skill, mod in stats_dict['skills'].items(): # ex {'farming': 3}
+                    if mod > 0:
+                        return_list.append(self.gain_skill(skill, mod))
+                    elif mod < 0:
+                        return_list.append(self.lose_skill(skill, mod))
+            if 'abiltiies' in stats_dict:
+                for ability, mod in stats_dict['abilities'].items():
+                    if mod > 0:
+                        return_list.append(self.gain_ability(ability, mod))
+                    elif mod < 0:
+                        return_list.append(self.lose_ability(ability, mod))
+            if 'motivations' in stats_dict:
+                for motivation, mod in stats_dict['motivations'].items():
+                    if mod > 0:
+                        return_list.append(self.gain_motivation(motivation, mod))
+                    elif mod < 0:
+                        return_list.append(self.lose_motivation(motivation, mod))
+            if 'traits' in stats_dict:
+                for trait, mod in stats_dict['traits'].items():
+                    if mod > 0:
                         return_list.append(self.gain_trait(trait))
-                if 'motivations' in gain:
-                    for motivation in gain['motivations']:
-                        return_list.append(self.gain_motivation(motivation))
-                if 'keepsakes' in gain:
-                    for keepsake in gain['keepsakes']:
-                        return_list.append(self.gain_keepsake(keepsake))
-                if 'appearances' in gain:
-                    for appearance in gain['appearances']:
-                        return_list.append(self.gain_appearance(appearance))
-
-            if 'lose' in stats_dict:
-                lose = stats_dict['lose']
-                if 'abilities' in lose:
-                    for ability in lose['abilities']:
-                        return_list.append(self.lose_ability(ability))
-                if 'skills' in lose:
-                    for skill in lose['skills']:
-                        return_list.append(self.lose_skill(skill))
-                if 'traits' in lose:
-                    for trait in lose['traits']:
+                    elif mod < 0:
                         return_list.append(self.lose_trait(trait))
-                if 'motivations' in lose:
-                    for motivation in lose['motivations']:
-                        return_list.append(self.lose_motivation(motivation))
-                if 'keepsakes' in lose:
-                    for keepsake in lose['keepsakes']:
-                        return_list.append(self.lose_keepsake(keepsake))
-                if 'appearances' in lose:
-                    for appearance in lose['appearances']:
+            if 'keepsakes' in stats_dict:
+                for keepsakes, mod in stats_dict['keepsakes'].items():
+                    if mod > 0:
+                        return_list.append(self.gain_keepsake(keepsakes))
+                    elif mod < 0:
+                        return_list.append(self.lose_keepsake(keepsakes))
+            if 'appearances' in stats_dict:
+                for appearance, mod in stats_dict['appearances'].items():
+                    if mod > 0:
+                        return_list.append(self.gain_appearance(appearance))
+                    elif mod < 0:
                         return_list.append(self.lose_appearance(appearance))
-
             return return_list
         except Exception as e:
-            print(f"Error updating character stats: {e}")
+            console.write_error(f"Error updating character stats: {e}")
 
 
     def gain_skill(self, skill_id, num = 1):
@@ -129,7 +136,7 @@ class character:
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         except Exception as e:
-            print(f"Error adding skill {skill_id} to character: {e}")
+            console.write_error(f"Error adding skill {skill_id} to character: {e}")
 
     def lose_skill(self, skill_id, num = 1):
         try:
@@ -149,7 +156,7 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
     
         except Exception as e:
-            print(f"Error removing skill {skill_id} from character: {e}")
+            console.write_error(f"Error removing skill {skill_id} from character: {e}")
 
     def gain_ability(self, ability_id, num = 1):
         try:
@@ -168,7 +175,7 @@ class character:
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         except Exception as e:
-            print(f"Error adding ability {ability_id} to character: {e}")
+            console.write_error(f"Error adding ability {ability_id} to character: {e}")
 
     def lose_ability(self, ability_id, num = 1):
         try:
@@ -187,7 +194,7 @@ class character:
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         except Exception as e:
-            print(f"Error removing ability {ability_id} from character: {e}")
+            console.write_error(f"Error removing ability {ability_id} from character: {e}")
 
     def gain_motivation(self, motivation, num = 1):
         try:
@@ -220,7 +227,7 @@ class character:
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         except Exception as e:
-            print(f"Error adding motivation {motivation_id} to character: {e}")
+            console.write_error(f"Error adding motivation {motivation_id} to character: {e}")
 
     def lose_motivation(self, motivation, num = 1):
         try:
@@ -254,19 +261,20 @@ class character:
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         except Exception as e:
-            print(f"Error removing motivation {motivation_id} from character: {e}")
+            console.write_error(f"Error removing motivation {motivation_id} from character: {e}")
             
     def gain_trait(self, trait_id):
         try:
             stat, change, success, message = 'trait', 'gain', True, ''
 
             if trait_id not in self.traits:
-                # get trait info from 
+                # get trait info from db
                 db_trait = pd.read_sql_query(f"SELECT * FROM traits WHERE id = '{trait_id}'", db)
                 if len(db_trait) == 0:
                     raise Exception(f"Could not find trait: {trait_id}")
-                
                 trait_dict = db_trait.to_dict(orient='records')[0]
+                # get and parse modifier into trait['modifiers']
+                # save trait dict to traits
                 self.traits[trait_id] = trait_dict
                 message = f"Trait gained: {self.traits[trait_id]['name'].capitalize()}"
             else:
@@ -276,7 +284,7 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            print(f"Error adding trait {trait_id} to character: {e}")
+            console.write_error(f"Error adding trait {trait_id} to character: {e}")
 
     def lose_trait(self, trait_id):
         try:
@@ -295,7 +303,7 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            print(f"Error removing trait {trait_id} from character: {e}")
+            console.write_error(f"Error removing trait {trait_id} from character: {e}")
 
     def gain_keepsake(self, keepsake_id):
         try:
@@ -316,7 +324,7 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            print(f"Error adding keepsake {keepsake_id} to character: {e}")
+            console.write_error(f"Error adding keepsake {keepsake_id} to character: {e}")
 
     def lose_keepsake(self, keepsake_id):
         try:
@@ -335,7 +343,7 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            print(f"Error removing keepsake {keepsake_id} from character: {e}")
+            console.write_error(f"Error removing keepsake {keepsake_id} from character: {e}")
 
     def gain_appearance(self, appearance_id):
         try:
@@ -357,7 +365,7 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            print(f"Error adding appearance {appearance_id} to character: {e}")
+            console.write_error(f"Error adding appearance {appearance_id} to character: {e}")
 
     def lose_appearance(self, appearance_id):
         try:
@@ -376,7 +384,7 @@ class character:
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            print(f"Error removing appearance {appearance_id} from character: {e}")
+            console.write_error(f"Error removing appearance {appearance_id} from character: {e}")
 
 
     def change_lifepath(self, lifepath_id):
@@ -393,7 +401,7 @@ class character:
             self.setting = lifepath['setting']
 
         except Exception as e:
-            print(f"Error moving character to lifepath {lifepath_id}: {e}")
+            console.write_error(f"Error moving character to lifepath {lifepath_id}: {e}")
 
     def __character_creation_pronouns(self, name, gender):
         if gender == "male":
@@ -424,7 +432,7 @@ class character:
                 result_dict[entry['id']]['rank'] = 0
             return result_dict
         except Exception as e:
-            print(f"Error adding default values from table {table}: {e}")
+            console.write_error(f"Error adding default values from table {table}: {e}")
             
     def __check_if_in_db(self, table, id):
         # check that the skill is in the db

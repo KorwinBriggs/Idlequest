@@ -569,6 +569,7 @@ if __name__ == "__main__":
     testperson.change_lifepath("kid_peasant")
     console.write(f"Lifepath: {testperson.lifepath}")
 
+    run_event(event_to_dict("baby_adventurous"), testperson)
     run_event(event_to_dict("peasant_kid_first_plant"), testperson)
     run_event(event_to_dict("peasant_kid_herding"), testperson)
     # run_event(event_to_dict("peasant_kid_church"), testperson)
@@ -593,3 +594,9 @@ if __name__ == "__main__":
     console.write("Opportunities:")
     for opportunity in opportunities:
         console.write(f"- {opportunity['id']}")
+
+
+    console.write(f"Motivations: {testperson.motivations}")
+    console.write(f"Abilities: {testperson.abilities}")
+    console.write(f"Skills: {testperson.skills}")
+    console.write(f"Traits: {testperson.traits}")

@@ -15,30 +15,20 @@ def parse_pronouns(string, character):
         Pos = character.pos.capitalize()
     )
 
-def parse_effects(string):
 
+
+def parse_effects(string):
     # for things like: "gainOne(skills: farming, plants_and_herbs), gainOne(motivations: dutiful, industrious, traditional, humble)"
     result = {
-        'gain': {
-            'skills': [],
-            'traits': [],
-            'abilities': [],
-            'motivations': [],
-            'keepsakes': [],
-            'lifepaths': [],
-            'appearances': []
-        },
-        'lose': {
-            'skills': [],
-            'traits': [],
-            'abilities': [],
-            'motivations': [],
-            'keepsakes': [],
-            'lifepaths': [],
-            'appearances': []
-        }
+        'skills': {},
+        'traits': {},
+        'abilities': {},
+        'motivations': {},
+        'keepsakes': {},
+        'lifepaths': {},
+        'settings': {},
+        'appearances': {}
     }
-    
     # divide string into list of words
     words_list = re.split(r'\(|\)|:\s|,\s', string)
 
@@ -46,131 +36,95 @@ def parse_effects(string):
     command_words = ["gain", "gainOne", "lose", "loseOne"]
     subsections_by_commands = divide_list_at_keywords(words_list, command_words)
 
-    # get subsublists per type of effect
-    type_words = ["skills", "motivations", "traits", "abilities", "lifepaths", "keepsakes", "appearances"]
     for command_subsection in subsections_by_commands:
-
+        # get command, then delete it from list and parse the rest into parsed object
         command = command_subsection[0]
-        subsections_by_type = divide_list_at_keywords(command_subsection, type_words)
+        del command_subsection[0]
 
-        # if gain or lose, add everything that follows
-        if command in ('gain', 'lose'):
-            for type_subsection in subsections_by_type:
-                item_type = type_subsection[0]
+        # parse subsection - ' '.join'ed list into string because parse_items requires string, not list
+        items = (parse_items(' '.join(command_subsection))) 
 
-                for index in range(len(type_subsection)):
-                    if index == 0:
-                        continue # skip the first item in each list, ie 'skills' or 'motivations'
+        # if gain or lose, add all to result
+        if command == 'lose' or command == 'gain':
+            for item_type in items: # ex 'skills
+                for item_id, item_mod in items[item_type].items(): # ex farming, 1
+                    # if lose, make modifier negative
+                    if command == 'lose':
+                        item_mod *= -1
+                    # if already in result, add mod to existing entry
+                    if item_id in result[item_type]:
+                        result[item_type][item_id] += item_mod
+                    # if not, add new entry
                     else:
-                        item_id = type_subsection[index]
-                        result[command][item_type].append(item_id) # add item to appropriate place in result dict
-        
-        # if gainOne or loseOne, add a random one from the following list
-        elif command in ('gainOne', 'loseOne'):
-            try:
-                # get total number of options
-                total_options = 0
-                for type_subsection in subsections_by_type:
-                    total_options += len(type_subsection)-1
+                        result[item_type][item_id] = item_mod
 
-                # choose option number
-                chosen_option = random.randint(1, total_options)
-
-                # count forward to get option and type
-                count = 0
-                for type_subsection in subsections_by_type:
-                    for index in range(len(type_subsection)):
-                        if index == 0:
-                            continue # skip the first item in each list, ie 'skills' or 'motivations'
-                        else:
-                            count += 1
-                            if count == chosen_option: # if it's the right option, add it to the result dict in the right spot
-                                item_type = type_subsection[0]
-                                item_id = type_subsection[index]
-                                if command == 'gainOne':
-                                    result['gain'][item_type].append(item_id)
-                                elif command == 'loseOne':
-                                    result['lose'][item_type].append(item_id)
-
-            except Exception as e: (f"Error while parsing command {command}: {format(e)}")
-
-        else: 
-            raise Exception(f"Error while parsing effect: Unexpected command {command}")
-        
+        # if gainOne or loseOne, first choose random item (and make note of its type)
+        elif command == 'gainOne' or command == 'loseOne':
+            # make list containing all the items like {'type': 'skills', 'id': 'farming', 'mod': 2}
+            random_item_list = []
+            for item_type in items: # ex 'skills'
+                for item_id, item_mod in items[item_type].items(): # ex 'farming', 1
+                    # if loseOne, make modifier negative
+                    if command == 'loseOne':
+                        item_mod *= 1
+                    random_item_list.append({'type': item_type, 'id': item_id, 'mod': item_mod})
+            # choose random entry from list
+            random_item = random_item_list[random.randint(0, len(random_item_list)-1)]
+            # if already in result, add mod to existing entry
+            item_type = random_item['type']
+            item_id = random_item['id']
+            item_mod = random_item['mod']
+            if item_id in result[item_type]:
+                result[item_type][item_id] += item_mod
+            # if not, add new entry
+            else:
+                result[item_type][item_id] = item_mod
 
     return result
 
 
-
-def parse_prereqs(string):
+def parse_items(string):
     # for things like: "lifepaths: baby, skills: farming"
+    # should return a series of dicts like {'skills': {'farming': 2, 'mining': -1} }
     result = {
-        'skills': [],
-        'traits': [],
-        'abilities': [],
-        'motivations': [],
-        'keepsakes': [],
-        'lifepaths': [],
-        'settings': []
+        'skills': {},
+        'traits': {},
+        'abilities': {},
+        'motivations': {},
+        'keepsakes': {},
+        'lifepaths': {},
+        'settings': {},
+        'appearances': {}
     }
 
-    # divide string into list of words, then into sublists by type
-    words_list = re.split(r'\(|\)|:\s|,\s', string)
-    type_words = ["skills", "traits", "abilities", "motivations", "keepsakes", "lifepaths", "settings"]
+    # divide string into list of words
+    words_list = re.split(r'\(|\)|:\s|,\s|\s', string)
+    # divide those lists into separate lists by keyword
+    type_words = ["skills", "traits", "abilities", "motivations", "keepsakes", "lifepaths", "settings", "appearances"]
     subsections_by_type = divide_list_at_keywords(words_list, type_words)
 
     for type_subsection in subsections_by_type:
+        # get item type, then remove it from subsection list
         item_type = type_subsection[0]
+        del type_subsection[0]
 
-        for index in range(len(type_subsection)):
-            if index == 0:
-                continue # skip the first item in each list, ie 'skills' or 'motivations'
-            else:
-                item_id = type_subsection[index]
-                result[item_type].append(item_id) # add item to appropriate place in result dict
-
-    return result
-
-
-def parse_comma_lists( 
-        skills = [],
-        traits = [],
-        abilities = [],
-        motivations = [],
-        keepsakes = [],
-        lifepaths = [],
-        settings = [],
-        opportunities = []
-        ):
-    
-    # for individual lists like "strength, toughness, stamina", where the type is already known
-    # call function like: parse_comma_lists(abilities="strength, toughness, stamina", skills="farming")
-    string_list = [skills, traits, abilities, motivations, keepsakes, lifepaths, settings, opportunities]
-    parsed_list = []
-    for item in string_list:
-        if isinstance(item, str):
-            parsed_item = re.split(r'\(|\)|:\s|,\s', item) # split into list of words
-        else:
-            parsed_item = item
-        parsed_list.append(parsed_item)
-
-    result = {
-        'skills': parsed_list[0],
-        'traits': parsed_list[1],
-        'abilities': parsed_list[2],
-        'motivations': parsed_list[3],
-        'keepsakes': parsed_list[4],
-        'lifepaths': parsed_list[5],
-        'settings': parsed_list[6],
-        'opportunities': parsed_list[7]
-    }
+        # use parse_modifiers to get id and mod
+        for item in type_subsection:
+            parsed_item = parse_modifiers(item)
+            for item_id, item_mod in parsed_item.items(): # for loop only runs 1 time; needed it because .items() is iterable
+                # if already in result, add mods together
+                if item_id in result[item_type]:
+                    result[item_type][item_id] += item_mod
+                # otherwise, add as new entry
+                else:
+                    result[item_type][item_id] = item_mod
 
     return result
 
-    
-############# HELPER FUNCTIONS ##############
 
 def divide_list_at_keywords(words_list, keywords_list):
+    # takes list of words, like ["motivations", "adventurous", "lazy", "skills", "farming"]
+    # and splits by keywrods, returning ex. [['motivations', 'adventurous', 'lazy'], ['skills', 'farming']]
     keywords_indices = []
     for index, word in enumerate(words_list):
         if word in keywords_list:
@@ -188,11 +142,34 @@ def divide_list_at_keywords(words_list, keywords_list):
     return sections
 
 
+def parse_modifiers(string):
+    # for things like "farming+2" or "resolve-3"; if no + or -, defaults to +1
+    if '+' in string:
+        split = string.split('+')
+        return {split[0]: int(split[1])} # if +, {farming: 2}
+    elif '-' in string:
+        split = string.split('-')
+        return {split[0]: int(split[1]) * -1} # if -, {farming: -2}
+    else:
+        return {string: 1} # if neither, default to {farming: 1}
+
+
     
 
 if __name__ == "__main__":
-    # print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly)"))
-    # print(parse_prereqs("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
-    # print(parse_comma_lists(abilities="strength, toughness, stamina", skills="farming"))
-    print(parse_effects("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))
-    print(parse_comma_lists("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))
+
+    # print(parse_modifiers("resolve"))
+
+    # words_list = ["motivations", "adventurous", "lazy", "skills", "farming"]
+    # type_words = ["skills", "traits", "abilities", "motivations", "keepsakes", "lifepaths", "settings"]
+    # print(divide_list_at_keywords(words_list, type_words))
+
+    # joined_list = (' '.join(['motivations', 'adventurous', 'lazy', 'rebellious', 'skills', 'farming']))
+    # print(joined_list)
+    # parsed_joined_list = parse_items(joined_list)
+    # print(parsed_joined_list)
+
+    print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly+2), lose(abilities: strength, resolve)"))
+    # # print(parse_items("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
+    # print(parse_effects("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))
+    
