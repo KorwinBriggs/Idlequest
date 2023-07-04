@@ -32,7 +32,10 @@ CREATE TABLE settings(
 CREATE TABLE motivations(
    id TEXT PRIMARY KEY,
    low TEXT NOT NULL,
-   high TEXT NOT NULL
+   low_description TEXT NOT NULL,
+   high TEXT NOT NULL,
+   high_description TEXT NOT NULL,
+   notes TEXT
 );
 
 CREATE TABLE abilities(
@@ -65,7 +68,10 @@ CREATE TABLE lifepaths(
    name TEXT NOT NULL,
    setting TEXT NOT NULL,
    years INTEGER NOT NULL,
+   skills TEXT,
+   abilities TEXT,
    traits TEXT,
+   keepsakes TEXT,
    description TEXT,
    baby INTEGER NOT NULL,
    kid INTEGER NOT NULL,
@@ -103,11 +109,11 @@ CREATE TABLE opportunities(
    prereq_type TEXT NOT NULL,
    prereq_id TEXT NOT NULL,
    continuation INTEGER NOT NULL,
-   choice_description TEXT NOT NULL,
+   choice_prompt TEXT NOT NULL,
    motivations TEXT,
    abilities TEXT,
    skills TEXT,
-   frequency INTEGER NOT NULL,
+   risk TEXT,
    difficulty INTEGER NOT NULL,
    setup TEXT NOT NULL,
    success_description TEXT,

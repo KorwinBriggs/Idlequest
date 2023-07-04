@@ -498,10 +498,62 @@ def get_most_desired_opportunity(opportunity_list_with_character_ranks):
     except Exception as e:
         console.write_error(f"Error adding best motivation match to list of opportunities: {e}") 
         
-def choose_opportunity(opportunity_dict_list):
-    0
+def choose_opportunity(opportunity_dict_list, character):
     # takes opportunity_dict_list, prints choices to screen, and returns the choice dict
-    # lay out list
+    
+    try:
+        intro_text = gameparser.parse_pronouns("{Name} considers the opportunities before {obj}...", character)
+
+        choices = []
+
+        # for each choice, compile text
+        for index in range(len(opportunity_dict_list)):
+            opportunity_dict = opportunity_dict_list[index]
+            console.write(opportunity_dict)
+            choice_text = ''
+            # add description
+            choice_text += f"{index+1}: {gameparser.parse_pronouns(opportunity_dict['choice_prompt'], character)}"
+            # add risk
+            choice_text += f"\n   Risk: {opportunity_dict['risk'].capitalize()}"
+            # list bonuses
+            bonuses = '\n   Bonuses:'
+            for item_type in opportunity_dict['character_ranks']: # ie 'abilities'
+                # check if there are abilities/skills/motivations in character_ranks
+                if item_type in ('abilities', 'skills', 'motivations'):
+                    relevant_bonuses = []
+                    if len(opportunity_dict['character_ranks'][item_type]) > 0:
+                        # if there are, color and add the non-zero ones to a relevant_bonuses list
+                        for item, value in opportunity_dict['character_ranks'][item_type].items():
+                            if value > 0:
+                                relevant_bonuses.append(f"[green]{item.capitalize()}: {value}[/green], ")
+                            elif value < 0:
+                                relevant_bonuses.append(f"[red]{item.capitalize()}: {value}[/red], ")
+                    # if there were relevant_bonuses, add a printed list of them, including category name
+                    if len(relevant_bonuses) > 0:
+                        bonuses += f" {item_type.capitalize()}: "
+                        for bonus in relevant_bonuses:
+                            bonuses += bonus
+            # add bonuses to choice_text
+            choice_text += bonuses
+            # add choice_text to choices
+            choices.append(choice_text)
+
+        # write the choice options, and take 1, 2, 3, or 4 as responses
+        valid_choice = False
+        while valid_choice == False:
+            console.write(intro_text)
+            for choice in choices:
+                console.write(choice)
+            choice = console.read(gameparser.parse_pronouns('Which does {Name} choose?', character))
+            if choice in ('1','2','3','4'):
+                valid_choice = True
+            else:
+                console.write('...')
+
+        return opportunity_dict_list[int(choice)-1]
+    
+    except Exception as e:
+        console.write_error(f"Error choosing opportunities: {e}") 
 
 def run_opportunity(opportunity_dict, character):
     0
@@ -588,6 +640,11 @@ if __name__ == "__main__":
     console.write(f"Motivations: {testperson.motivations}")
     console.write(f"Abilities: {testperson.abilities}")
     console.write(f"Skills: {testperson.skills}")
+    console.write(f"Traits: {testperson.traits}")
+
+    console.write(f"Current Strength: {testperson.get_ability('strength')}")
+    console.write(f"Current Sociability: {testperson.get_motivation('social')}")
+    console.write(f"Current Solitariness: {testperson.get_motivation('solitary')}")
 
     situation = get_situation("peasant") # at this time, only one possible result: peasant_fort_construction
     console.write(f"Situation: {situation}")
@@ -595,15 +652,4 @@ if __name__ == "__main__":
 
     opportunities = get_opportunities(situation, testperson)
     console.write("Opportunities:")
-    for opportunity in opportunities:
-        console.write(f"- {opportunity['id']}")
-
-
-    console.write(f"Motivations: {testperson.motivations}")
-    console.write(f"Abilities: {testperson.abilities}")
-    console.write(f"Skills: {testperson.skills}")
-    console.write(f"Traits: {testperson.traits}")
-
-    console.write(f"Current Strength: {testperson.get_ability('strength')}")
-    console.write(f"Current Sociability: {testperson.get_motivation('social')}")
-    console.write(f"Current Solitariness: {testperson.get_motivation('solitary')}")
+    choice = choose_opportunity(opportunities, testperson)
