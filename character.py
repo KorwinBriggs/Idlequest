@@ -43,8 +43,8 @@ class character:
         self.keepsakes = {}
         # list of posessions by id
 
-        self.connections = {}
-        # list of connections, including their names, ages, 
+        self.relationships = {}
+        # list of relationships, including their names, ages, 
 
         self.setting = setting
         # current setting id
@@ -78,7 +78,7 @@ class character:
         'abilities': {},
         'motivations': {},
         'keepsakes': {},
-        'connections': {},
+        'relationships': {},
         'lifepaths': {},
         'settings': {},
         'appearances': {}
@@ -115,12 +115,12 @@ class character:
                         return_list.append(self.gain_keepsake(keepsake))
                     elif mod < 0:
                         return_list.append(self.lose_keepsake(keepsake))
-            if 'connections' in stats_dict:
-                for connection, mod in stats_dict['connections'].items():
+            if 'relationships' in stats_dict:
+                for relationship, mod in stats_dict['relationships'].items():
                     if mod > 0:
-                        return_list.append(self.gain_connection(connection))
+                        return_list.append(self.gain_relationship(relationship))
                     elif mod < 0:
-                        return_list.append(self.lose_connection(connection))
+                        return_list.append(self.lose_relationship(relationship))
             if 'appearances' in stats_dict:
                 for appearance, mod in stats_dict['appearances'].items():
                     if mod > 0:
@@ -451,68 +451,68 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing trait {trait_id} from character: {e}")
 
-    def gain_connection(self, connection_id, name=None):
+    def gain_relationship(self, relationship_id, name=None):
         try:
-            stat, change, success, message = 'connection', 'gain', True, ''
+            stat, change, success, message = 'relationship', 'gain', True, ''
 
-            print(f"gaining connection {connection_id}")
-            if connection_id not in self.traits:
+            print(f"gaining relationship {relationship_id}")
+            if relationship_id not in self.traits:
                 # get trait info from db
-                db_connection = pd.read_sql_query(f"SELECT * FROM connections WHERE id = '{connection_id}'", db)
-                if len(db_connection) == 0:
-                    raise Exception(f"Could not find connection: {connection_id}")
-                connection_dict = row_to_dict(db_connection)
-                print(f"connection_dict: {connection_dict}")
+                db_relationship = pd.read_sql_query(f"SELECT * FROM relationships WHERE id = '{relationship_id}'", db)
+                if len(db_relationship) == 0:
+                    raise Exception(f"Could not find relationship: {relationship_id}")
+                relationship_dict = row_to_dict(db_relationship)
+                print(f"relationship_dict: {relationship_dict}")
 
                 # generate name if none provided
                 if name == None:
-                    namegen = connection_dict['namegen'].split(' ')
+                    namegen = relationship_dict['namegen'].split(' ')
                     name = ''
                     for part in namegen:
-                        db_name_part = pd.read_sql_query(f"SELECT name FROM namegen WHERE type = '{part}' and gender = '{connection_dict['gender']}'", db)
+                        db_name_part = pd.read_sql_query(f"SELECT name FROM namegen WHERE type = '{part}' and gender = '{relationship_dict['gender']}'", db)
                         if len(db_name_part) == 0:
                             name += part
                         else:
                             name += random_row_to_dict(db_name_part)['name']
                         name += ' '
-                connection_dict['name'] = name.strip()
+                relationship_dict['name'] = name.strip()
                 print(f"name: {name}")
 
                 # generate starting age
-                connection_dict['age'] = random.randint(connection_dict['start_age_min'], connection_dict['start_age_max'])
-                connection_dict['max_age'] = random.randint(connection_dict['end_age_min'], connection_dict['end_age_max'])
+                relationship_dict['age'] = random.randint(relationship_dict['start_age_min'], relationship_dict['start_age_max'])
+                relationship_dict['max_age'] = random.randint(relationship_dict['end_age_min'], relationship_dict['end_age_max'])
 
-                # save connection dict to traits
-                self.connections[connection_id] = connection_dict
-                message = f"Connection gained: {self.connections[connection_id]['name'].capitalize()}"
+                # save relationship dict to traits
+                self.relationships[relationship_id] = relationship_dict
+                message = f"relationship gained: {self.relationships[relationship_id]['name'].capitalize()}"
             else:
-                message = f"Already had connection: {self.connections[connection_id]['name'].capitalize()}"
+                message = f"Already had relationship: {self.relationships[relationship_id]['name'].capitalize()}"
                 success = False
             
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            console.write_error(f"Error adding connection {connection_id} to character: {e}")
+            console.write_error(f"Error adding relationship {relationship_id} to character: {e}")
     
-    def lose_connection(self, connection_id):
+    def lose_relationship(self, relationship_id):
         try:
-            stat, change, success, message = 'connection', 'loss', True, ''
+            stat, change, success, message = 'relationship', 'loss', True, ''
 
-            if not self.__check_if_in_db("connections", connection_id):
-                raise Exception(f"Could not find connection: {connection_id}")
+            if not self.__check_if_in_db("relationships", relationship_id):
+                raise Exception(f"Could not find relationship: {relationship_id}")
             
-            if connection_id in self.connections:
-                name = self.connections[connection_id]['name']
-                self.connections.pop(connection_id)
-                message = f"Connection lost: {name}"
+            if relationship_id in self.relationships:
+                name = self.relationships[relationship_id]['name']
+                self.relationships.pop(relationship_id)
+                message = f"relationship lost: {name}"
             else:
-                message = f"Never had connection: {name}"
+                message = f"Never had relationship: {name}"
                 success = False
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
         
         except Exception as e:
-            console.write_error(f"Error removing connection {connection_id} from character: {e}")
+            console.write_error(f"Error removing relationship {relationship_id} from character: {e}")
 
     def gain_keepsake(self, keepsake_id):
         try:
@@ -720,7 +720,8 @@ if __name__ == "__main__":
     # print(testchar.abilities)
     # print(testchar.traits)
     # testchar.update_stats({'pop':'poop'})
-    print(testchar.update_stats({'connections': {'pet_dog': 1, 'miller': 1}}))
-    # print(testchar.connections)
-    print(testchar.update_stats({'connections': {'pet_dog': -1, 'miller': -1}}))
-    # print(testchar.connections)
+    print(testchar.update_stats({'relationships': {'pet_dog': 1, 'miller': 1}}))
+    # print(testchar.relationships)
+    print(testchar.update_stats({'relationships': {'pet_dog': -1, 'miller': -1}}))
+    # print(testchar.relationships)
+    print(testchar.abilities)

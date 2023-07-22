@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS traits;
 DROP TABLE IF EXISTS skills;
 DROP TABLE IF EXISTS lifepaths;
 DROP TABLE IF EXISTS keepsakes;
-DROP TABLE IF EXISTS connections;
+DROP TABLE IF EXISTS relationships;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS opportunities;
 DROP TABLE IF EXISTS situations;
@@ -99,7 +99,7 @@ CREATE TABLE keepsakes(
    notes TEXT
 );
 
-CREATE TABLE connections(
+CREATE TABLE relationships(
    id TEXT PRIMARY KEY,
    name TEXT NOT NULL,
    namegen TEXT,
@@ -180,7 +180,7 @@ CREATE TABLE namegen(
 .import --skip 1 "idlegamedata/skills.csv" skills
 .import --skip 1 "idlegamedata/lifepaths.csv" lifepaths
 .import --skip 1 "idlegamedata/keepsakes.csv" keepsakes
-.import --skip 1 "idlegamedata/connections.csv" connections
+.import --skip 1 "idlegamedata/relationships.csv" relationships
 .import --skip 1 "idlegamedata/events.csv" events
 .import --skip 1 "idlegamedata/opportunities.csv" opportunities
 .import --skip 1 "idlegamedata/situations.csv" situations

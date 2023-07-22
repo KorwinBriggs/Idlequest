@@ -182,7 +182,7 @@ def get_baby_events(character):
 def get_kid_events(character):
     0 # Should be like get_events but only use kid lifepath (to avoid any weird adult things)
 
-def get_events(character): # CHANGE THIS so it returns a varied list, ie 4 career events, 2 setting events, 3 connection events
+def get_events(character): # CHANGE THIS so it returns a varied list, ie 4 career events, 2 setting events, 3 relationship events
     try:
         event_dicts = [] # the list of dicts to return
         used_events = [] # list of event_id's already used, for easier searching
