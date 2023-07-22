@@ -439,10 +439,11 @@ class character:
                 raise Exception(f"Could not find trait: {trait_id}")
             
             if trait_id in self.traits:
+                name = self.traits[trait_id]['name'].capitalize()
                 self.traits.pop(trait_id)
-                message = f"Trait lost: {self.traits[trait_id]['name'].capitalize()}"
+                message = f"Trait lost: {name}"
             else:
-                message = f"Never had trait: {self.traits[trait_id]['name'].capitalize()}"
+                message = f"Never had trait: {name}"
                 success = False
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
@@ -501,10 +502,11 @@ class character:
                 raise Exception(f"Could not find connection: {connection_id}")
             
             if connection_id in self.connections:
-                self.traits.pop(connection_id)
-                message = f"Connection lost: {self.connections[connection_id]['name'].capitalize()}"
+                name = self.connections[connection_id]['name']
+                self.connections.pop(connection_id)
+                message = f"Connection lost: {name}"
             else:
-                message = f"Never had connection: {self.connections[connection_id]['name'].capitalize()}"
+                message = f"Never had connection: {name}"
                 success = False
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
@@ -546,10 +548,11 @@ class character:
                 raise Exception(f"Could not find keepsake: {keepsake_id}")
             
             if keepsake_id in self.keepsakes:
+                name = self.keepsakes[keepsake_id]['name'].capitalize()
                 self.keepsakes.pop(keepsake_id)
-                message = f"Keepsake lost: {self.keepsakes[keepsake_id]['name'].capitalize()}"
+                message = f"Keepsake lost: {name}"
             else:
-                message = f"Never had keepsake: {self.keepsakes[keepsake_id]['name'].capitalize()}"
+                message = f"Never had keepsake: {name}"
                 success = False
 
             return {'stat': stat, 'change': change, 'success': success, 'message': message}
@@ -717,5 +720,7 @@ if __name__ == "__main__":
     # print(testchar.abilities)
     # print(testchar.traits)
     # testchar.update_stats({'pop':'poop'})
-    testchar.update_stats({'connections': {'pet_dog': 1, 'miller': 1}})
-    print(testchar.connections)
+    print(testchar.update_stats({'connections': {'pet_dog': 1, 'miller': 1}}))
+    # print(testchar.connections)
+    print(testchar.update_stats({'connections': {'pet_dog': -1, 'miller': -1}}))
+    # print(testchar.connections)
