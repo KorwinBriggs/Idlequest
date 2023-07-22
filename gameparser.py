@@ -88,7 +88,7 @@ def parse_items(string):
     # divide string into list of words
     words_list = re.split(r'\(|\)|:\s|,\s|\s', string)
     # divide those lists into separate lists by keyword
-    type_words = ["skills", "traits", "abilities", "motivations", "keepsakes", "lifepaths", "settings", "appearances"]
+    type_words = ["skills", "traits", "abilities", "motivations", "keepsakes", "lifepaths", "settings", "appearances", "connections"]
     subsections_by_type = divide_list_at_keywords(words_list, type_words)
 
     for type_subsection in subsections_by_type:
@@ -162,9 +162,11 @@ if __name__ == "__main__":
     # parsed_joined_list = parse_items(joined_list)
     # print(parsed_joined_list)
 
-    print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly+2), lose(abilities: strength, resolve)"))
+    # print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly+2), lose(abilities: strength, resolve)"))
     # # print(parse_items("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
     # print(parse_effects("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))
+    print(parse_effects("gain(connections: pet_dog, abilities: resolve, social_sense)"))
     
 
-    print(parse_items("motivations: adventurous"))
+    print(parse_items("motivations: adventurous, connections: pet_dog"))
+

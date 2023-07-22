@@ -2,8 +2,10 @@ import sqlite3
 import random
 import numpy as np
 import pandas as pd
+
 import console
 import gameparser
+from dbhelpers import row_to_dict, random_row_to_dict
 
 db = sqlite3.connect("db/gamedata.db")
 
@@ -26,13 +28,13 @@ class character:
         self.appearances = {}
         # list of appearances by id.
 
-        self.abilities = self.__character_creation_load_default_values('abilities')
+        self.abilities = self.__character_creation_abilities()
         # list of abilities by id, range 0 to 10
 
-        self.skills = self.__character_creation_load_default_values('skills')
+        self.skills = self.__character_creation_skills()
         # list of all skills by id and their levels. range 0 to 10
 
-        self.motivations = self.__character_creation_load_default_values('motivations')
+        self.motivations = self.__character_creation_motivations()
         # list of motivations by id, range -5 to 5
 
         self.traits = {}
@@ -40,6 +42,9 @@ class character:
 
         self.keepsakes = {}
         # list of posessions by id
+
+        self.connections = {}
+        # list of connections, including their names, ages, 
 
         self.setting = setting
         # current setting id
@@ -73,6 +78,7 @@ class character:
         'abilities': {},
         'motivations': {},
         'keepsakes': {},
+        'connections': {},
         'lifepaths': {},
         'settings': {},
         'appearances': {}
@@ -104,11 +110,17 @@ class character:
                     elif mod < 0:
                         return_list.append(self.lose_trait(trait))
             if 'keepsakes' in stats_dict:
-                for keepsakes, mod in stats_dict['keepsakes'].items():
+                for keepsake, mod in stats_dict['keepsakes'].items():
                     if mod > 0:
-                        return_list.append(self.gain_keepsake(keepsakes))
+                        return_list.append(self.gain_keepsake(keepsake))
                     elif mod < 0:
-                        return_list.append(self.lose_keepsake(keepsakes))
+                        return_list.append(self.lose_keepsake(keepsake))
+            if 'connections' in stats_dict:
+                for connection, mod in stats_dict['connections'].items():
+                    if mod > 0:
+                        return_list.append(self.gain_connection(connection))
+                    elif mod < 0:
+                        return_list.append(self.lose_connection(connection))
             if 'appearances' in stats_dict:
                 for appearance, mod in stats_dict['appearances'].items():
                     if mod > 0:
@@ -275,10 +287,10 @@ class character:
         # {'farming': { ((id, name, etc)), 'rank': 1, 'modifiers': {traits: {green_thumb: 2}, keepsakes: {family_farm:1} }, 'total': 4 }
         try:
             # get motivation_id from motivation name
-            motivation_db = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'", db)
-            if len(motivation_db) == 0:
+            db_motivation = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'", db)
+            if len(db_motivation) == 0:
                 raise Exception(f"Could not find motivation: {motivation}")
-            motivation_dict = motivation_db.to_dict(orient="records")[0]
+            motivation_dict = row_to_dict(db_motivation)
             motivation_id = motivation_dict['id']
             motivation_low = motivation_dict['low']
             motivation_high = motivation_dict['high']
@@ -329,12 +341,12 @@ class character:
     def gain_motivation(self, motivation, num = 1):
         try:
             # find line in db with motivation name as high or low value
-            motivation_db = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'", db)
-            if len(motivation_db) == 0:
+            db_motivation = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'", db)
+            if len(db_motivation) == 0:
                 raise Exception(f"Could not find motivation: {motivation}")
             
             stat, change, success, message = 'motivation', 'gain', True, ''
-            motivation_dict = motivation_db.to_dict(orient="records")[0]
+            motivation_dict = row_to_dict(db_motivation)
             motivation_id = motivation_dict['id']
 
             # add or remove, as needed
@@ -402,7 +414,7 @@ class character:
                 db_trait = pd.read_sql_query(f"SELECT * FROM traits WHERE id = '{trait_id}'", db)
                 if len(db_trait) == 0:
                     raise Exception(f"Could not find trait: {trait_id}")
-                trait_dict = db_trait.to_dict(orient='records')[0]
+                trait_dict = row_to_dict(db_trait)
 
                 # get and parse modifier into trait['modifiers']
                 trait_dict['modifiers'] = gameparser.parse_items(trait_dict['modifiers'])
@@ -438,6 +450,68 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing trait {trait_id} from character: {e}")
 
+    def gain_connection(self, connection_id, name=None):
+        try:
+            stat, change, success, message = 'connection', 'gain', True, ''
+
+            print(f"gaining connection {connection_id}")
+            if connection_id not in self.traits:
+                # get trait info from db
+                db_connection = pd.read_sql_query(f"SELECT * FROM connections WHERE id = '{connection_id}'", db)
+                if len(db_connection) == 0:
+                    raise Exception(f"Could not find connection: {connection_id}")
+                connection_dict = row_to_dict(db_connection)
+                print(f"connection_dict: {connection_dict}")
+
+                # generate name if none provided
+                if name == None:
+                    namegen = connection_dict['namegen'].split(' ')
+                    name = ''
+                    for part in namegen:
+                        db_name_part = pd.read_sql_query(f"SELECT name FROM namegen WHERE type = '{part}' and gender = '{connection_dict['gender']}'", db)
+                        if len(db_name_part) == 0:
+                            name += part
+                        else:
+                            name += random_row_to_dict(db_name_part)['name']
+                        name += ' '
+                connection_dict['name'] = name.strip()
+                print(f"name: {name}")
+
+                # generate starting age
+                connection_dict['age'] = random.randint(connection_dict['start_age_min'], connection_dict['start_age_max'])
+                connection_dict['max_age'] = random.randint(connection_dict['end_age_min'], connection_dict['end_age_max'])
+
+                # save connection dict to traits
+                self.connections[connection_id] = connection_dict
+                message = f"Connection gained: {self.connections[connection_id]['name'].capitalize()}"
+            else:
+                message = f"Already had connection: {self.connections[connection_id]['name'].capitalize()}"
+                success = False
+            
+            return {'stat': stat, 'change': change, 'success': success, 'message': message}
+        
+        except Exception as e:
+            console.write_error(f"Error adding connection {connection_id} to character: {e}")
+    
+    def lose_connection(self, connection_id):
+        try:
+            stat, change, success, message = 'connection', 'loss', True, ''
+
+            if not self.__check_if_in_db("connections", connection_id):
+                raise Exception(f"Could not find connection: {connection_id}")
+            
+            if connection_id in self.connections:
+                self.traits.pop(connection_id)
+                message = f"Connection lost: {self.connections[connection_id]['name'].capitalize()}"
+            else:
+                message = f"Never had connection: {self.connections[connection_id]['name'].capitalize()}"
+                success = False
+
+            return {'stat': stat, 'change': change, 'success': success, 'message': message}
+        
+        except Exception as e:
+            console.write_error(f"Error removing connection {connection_id} from character: {e}")
+
     def gain_keepsake(self, keepsake_id):
         try:
             stat, change, success, message = 'keepsake', 'gain', True, ''
@@ -447,7 +521,7 @@ class character:
                 db_keepsake = pd.read_sql_query(f"SELECT * FROM keepsakes WHERE id = '{keepsake_id}'", db)
                 if len(db_keepsake) == 0:
                     raise Exception(f"Could not find keepsake: {keepsake_id}")
-                keepsake_dict = db_keepsake.to_dict(orient='records')[0]
+                keepsake_dict = row_to_dict(db_keepsake)
 
                 # get and parse modifier into trait['modifiers']
                 keepsake_dict['modifiers'] = gameparser.parse_items(keepsake_dict['modifiers'])
@@ -493,7 +567,7 @@ class character:
                 if len(db_appearance) == 0:
                     raise Exception(f"Could not find appearance: {appearance_id}")
                 
-                appearance_dict = db_appearance.to_dict(orient='records')[0]
+                appearance_dict = row_to_dict(db_appearance)
                 self.appearances[appearance_id] = appearance_dict
                 message = f"Appearance gained: {self.appearances[appearance_id]['name'].capitalize()}"
             else:
@@ -524,7 +598,7 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing appearance {appearance_id} from character: {e}")
 
-    def change_lifepath(self, lifepath_id):
+    def change_lifepath(self, lifepath_id): # make it add a trait from new one, and keepsake from old one if setting change
         try:
             # push old lifepath details into history
             # ...later
@@ -533,12 +607,13 @@ class character:
             db_lifepath = pd.read_sql_query(f"SELECT * FROM lifepaths WHERE id = '{lifepath_id}'", db)
             if len(db_lifepath) == 0:
                 raise Exception(f"Could not find lifepath: {lifepath}")
-            lifepath = db_lifepath.iloc[0].to_dict()
+            lifepath = row_to_dict(db_lifepath)
             self.lifepath = lifepath
             self.setting = lifepath['setting']
 
         except Exception as e:
             console.write_error(f"Error moving character to lifepath {lifepath_id}: {e}")
+
 
     def __character_creation_pronouns(self, name, gender):
         if gender == "male":
@@ -557,11 +632,11 @@ class character:
             }
         raise Exception(f"Problem assigning pronouns for gender {gender}")
     
-    def __character_creation_load_default_values(self, table):
+    def __character_creation_skills(self): # rewrite this for each table; skills 0, abilities 2-4, health 10, wealth by setting
         try:
-            db_dataframe = pd.read_sql_query(f"SELECT * FROM {table} WHERE id IS NOT NULL", db)
+            db_dataframe = pd.read_sql_query(f"SELECT * FROM skills WHERE id IS NOT NULL", db)
             if len(db_dataframe) == 0:
-                raise Exception(f"Could not find table: {table}.")
+                raise Exception(f"Could not find skills table.")
             db_dict = db_dataframe.to_dict(orient='records')
             result_dict = {}
             for entry in db_dict:
@@ -569,8 +644,39 @@ class character:
                 result_dict[entry['id']]['rank'] = 0
             return result_dict
         except Exception as e:
-            console.write_error(f"Error adding default values from table {table}: {e}")
-            
+            console.write_error(f"Error adding default values from skills table: {e}")
+    
+    def __character_creation_abilities(self):
+        try:
+            db_dataframe = pd.read_sql_query(f"SELECT * FROM abilities WHERE id IS NOT NULL", db)
+            if len(db_dataframe) == 0:
+                raise Exception(f"Could not find abilities table.")
+            db_dict = db_dataframe.to_dict(orient='records')
+            result_dict = {}
+            for entry in db_dict:
+                result_dict[entry['id']] = entry
+                result_dict[entry['id']]['rank'] = random.randint(2,4)
+            return result_dict
+        except Exception as e:
+            console.write_error(f"Error adding default values from skills table: {e}")
+
+    def __character_creation_motivations(self):
+        try:
+            db_dataframe = pd.read_sql_query(f"SELECT * FROM motivations WHERE id IS NOT NULL", db)
+            if len(db_dataframe) == 0:
+                raise Exception(f"Could not find motivations table.")
+            db_dict = db_dataframe.to_dict(orient='records')
+            result_dict = {}
+            for entry in db_dict:
+                result_dict[entry['id']] = entry
+                result_dict[entry['id']]['rank'] = 0
+            result_dict['health'] = 10
+            result_dict['wealth'] = 0
+            return result_dict
+        except Exception as e:
+            console.write_error(f"Error adding default values from skills table: {e}")
+
+      
     def __check_if_in_db(self, table, id):
         # check that the skill is in the db
         db_skill = pd.read_sql_query(f"SELECT * FROM {table} WHERE id = '{id}'", db)
@@ -602,11 +708,14 @@ class character:
 if __name__ == "__main__":
 
     testchar = character("Test Character", "male", "peasant")
-    print(testchar.gain_motivation('rebellious'))
-    print(testchar.lose_motivation('pious'))
-    print(testchar.update_stats({'gain': {'skills': ['farming'], 'traits': ['jolly'], 'abilities': [], 'motivations': [], 'keepsakes': [], 'lifepaths': []}, 'lose': {'skills': ['animal_handling'], 'traits': [], 'abilities': [], 'motivations': [], 'keepsakes': [], 'lifepaths': []}}))
+    # print(testchar.gain_motivation('rebellious'))
+    # print(testchar.lose_motivation('pious'))
+
+    # print(testchar.update_stats({'gain': {'skills': ['farming'], 'traits': ['jolly'], 'abilities': [], 'motivations': [], 'keepsakes': [], 'lifepaths': []}, 'lose': {'skills': ['animal_handling'], 'traits': [], 'abilities': [], 'motivations': [], 'keepsakes': [], 'lifepaths': []}}))
     # print(testchar.motivations)
     # print(testchar.skills)
     # print(testchar.abilities)
     # print(testchar.traits)
-    testchar.update_stats({'pop':'poop'})
+    # testchar.update_stats({'pop':'poop'})
+    testchar.update_stats({'connections': {'pet_dog': 1, 'miller': 1}})
+    print(testchar.connections)

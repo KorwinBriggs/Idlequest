@@ -14,11 +14,12 @@ import random
 import time
 # import datetime
 import argparse
-import console
 import traceback
 
 from character import character
 import gameparser
+import console
+from dbhelpers import row_to_dict, random_row_to_dict
 
 parser = argparse.ArgumentParser(
     prog='program name',
@@ -178,7 +179,10 @@ def get_baby_events(character):
     except Exception as e:
         console.write_error(f"Error creating list of baby events: {e}") 
 
-def get_events(character):
+def get_kid_events(character):
+    0 # Should be like get_events but only use kid lifepath (to avoid any weird adult things)
+
+def get_events(character): # CHANGE THIS so it returns a varied list, ie 4 career events, 2 setting events, 3 connection events
     try:
         event_dicts = [] # the list of dicts to return
         used_events = [] # list of event_id's already used, for easier searching
@@ -575,23 +579,6 @@ def event_to_dict(event_id_string):
         return db_event.iloc[0].to_dict()
     except Exception as e:
         console.write_error(f"Error retrieiving event {event_id_string}: {e}") 
-
-def row_to_dict(dataframe):
-    # takes single row dataframe, returns dict
-    try:
-        if len(dataframe) > 1:
-            raise Exception(console.write_error(f'Dataframe of more than one row passed to row_to_dict:\n{dataframe}'))
-        return dataframe.iloc[0].to_dict()
-    except Exception as e:
-        console.write_error(f"Error converting dataframe to dict: {e}") 
-
-def random_row_to_dict(dataframe):
-    # takes multi-row dataframe, returns single random row's dict
-    try:
-        random_row = random.randint(0, len(dataframe)-1)
-        return dataframe.iloc[random_row].to_dict()
-    except Exception as e:
-        console.write_error(f"Error converting dataframe to dict: {e}") 
 
 def convert_motivation(motivation, rank=0):
     db_motivation = pd.read_sql_query(f"SELECT * FROM motivations WHERE id = '{motivation}' OR low = '{motivation}' OR high = '{motivation}'")

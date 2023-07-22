@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS traits;
 DROP TABLE IF EXISTS skills;
 DROP TABLE IF EXISTS lifepaths;
 DROP TABLE IF EXISTS keepsakes;
+DROP TABLE IF EXISTS connections;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS opportunities;
 DROP TABLE IF EXISTS situations;
@@ -21,12 +22,17 @@ CREATE TABLE appearances(
    category TEXT NOT NULL,
    description TEXT,
    aging INTEGER NOT NULL,
-   scar INTEGER NOT NULL
+   scar INTEGER NOT NULL,
+   notes TEXT
 );
 
 CREATE TABLE settings(
    id TEXT PRIMARY KEY,
-   name TEXT NOT NULL
+   name TEXT NOT NULL,
+   skills TEXT,
+   abilities TEXT,
+   motivations TEXT,
+   notes TEXT
 );
 
 CREATE TABLE motivations(
@@ -41,7 +47,8 @@ CREATE TABLE motivations(
 CREATE TABLE abilities(
    id TEXT PRIMARY KEY,
    name TEXT,
-   type TEXT
+   type TEXT,
+   notes TEXT
 );
 
 CREATE TABLE traits(
@@ -52,7 +59,8 @@ CREATE TABLE traits(
    modifiers TEXT,
    description TEXT,
    age INTEGER NOT NULL,
-   scar INTEGER NOT NULL
+   scar INTEGER NOT NULL,
+   notes TEXT
 );
 
 CREATE TABLE skills(
@@ -60,7 +68,8 @@ CREATE TABLE skills(
    name TEXT NOT NULL, 
    settings TEXT,
    category TEXT,
-   description TEXT
+   description TEXT,
+   notes TEXT
 );
 
 CREATE TABLE lifepaths(
@@ -68,16 +77,16 @@ CREATE TABLE lifepaths(
    name TEXT NOT NULL,
    setting TEXT NOT NULL,
    years INTEGER NOT NULL,
+   events INTEGER NOT NULL,
    skills TEXT,
    abilities TEXT,
+   motivations TEXT,
    traits TEXT,
    keepsakes TEXT,
    description TEXT,
    baby INTEGER NOT NULL,
    kid INTEGER NOT NULL,
-   magic INTEGER NOT NULL,
-   guild INTEGER NOT NULL,
-   outcast INTEGER NOT NULL
+   notes TEXT
 );
 
 CREATE TABLE keepsakes(
@@ -86,7 +95,25 @@ CREATE TABLE keepsakes(
    category TEXT NOT NULL,
    source TEXT,
    modifiers TEXT,
-   description TEXT
+   description TEXT,
+   notes TEXT
+);
+
+CREATE TABLE connections(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   namegen TEXT,
+   gender TEXT NOT NULL,
+   relation TEXT NOT NULL,
+   description TEXT,
+   changes_setting INTEGER NOT NULL,
+   start_age_min INTEGER NOT NULL,
+   start_age_max INTEGER NOT NULL,
+   end_age_min INTEGER NOT NULL,
+   end_age_max INTEGER NOT NULL,
+   meet_event TEXT NOT NULL,
+   death_event TEXT NOT NULL,
+   notes TEXT
 );
 
 CREATE TABLE events(
@@ -101,7 +128,8 @@ CREATE TABLE events(
    success_description TEXT,
    success_effect TEXT,
    failure_description TEXT,
-   failure_effect TEXT
+   failure_effect TEXT,
+   notes TEXT
 );
 
 CREATE TABLE opportunities(
@@ -119,7 +147,8 @@ CREATE TABLE opportunities(
    success_description TEXT,
    success_effects TEXT,
    failure_description TEXT,
-   failure_effects TEXT
+   failure_effects TEXT,
+   notes TEXT
 );
 
 CREATE TABLE situations(
@@ -129,6 +158,14 @@ CREATE TABLE situations(
    description TEXT NOT NULL,
    effects TEXT NOT NULL,
    lifepath_replacements INTEGER NOT NULL,
+   notes TEXT
+);
+
+CREATE TABLE namegen(
+   id TEXT PRIMARY KEY,
+   name TEXT NOT NULL,
+   type TEXT NOT NULL,
+   gender TEXT NOT NULL,
    notes TEXT
 );
 
@@ -143,8 +180,10 @@ CREATE TABLE situations(
 .import --skip 1 "idlegamedata/skills.csv" skills
 .import --skip 1 "idlegamedata/lifepaths.csv" lifepaths
 .import --skip 1 "idlegamedata/keepsakes.csv" keepsakes
+.import --skip 1 "idlegamedata/connections.csv" connections
 .import --skip 1 "idlegamedata/events.csv" events
 .import --skip 1 "idlegamedata/opportunities.csv" opportunities
 .import --skip 1 "idlegamedata/situations.csv" situations
+.import --skip 1 "idlegamedata/namegen.csv" namegen
 
 .quit
