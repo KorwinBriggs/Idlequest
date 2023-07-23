@@ -21,18 +21,21 @@ import gameparser
 import console
 from dbhelpers import row_to_dict, random_row_to_dict
 
-parser = argparse.ArgumentParser(
-    prog='program name',
-    description='description',
-    epilog='text at end of help'
-)
+# parser = argparse.ArgumentParser(
+#     prog='program name',
+#     description='description',
+#     epilog='text at end of help'
+# )
 
-parser.add_argument('-m', '--mode', choices=['cli', 'web'], default='cli')
-# if mode is cli, it pushes updates there; otherwise, it establishes webhook and pushes there
+# parser.add_argument('-m', '--mode', choices=['cli', 'web'], default='cli')
+# # if mode is cli, it pushes updates there; otherwise, it establishes webhook and pushes there
+# # actually, scratch that -- i'm planning to rewrite this whole thing for phones in kotlin multiplatform.
 
-args = parser.parse_args()
-mode = args.mode
+# args = parser.parse_args()
+# mode = args.mode
 
+
+# CONSTANTS
 
 db = sqlite3.connect("db/gamedata.db") 
 
@@ -153,9 +156,12 @@ def get_baby_events(character):
                     'name': f"baby appearance {random_appearance['name']}",
                     'prereq_type': f'lifepath',
                     'prereq_id': f'baby',
+                    'event_type': 'gain',
                     'test_type': '',
                     'test_id': '',
-                    'difficulty': 0,
+                    'test_int': 0,
+                    'age_min': 0,
+                    'age_max': 4,
                     'setup': f"{appearance_setups[len(events)]} {random_appearance['name']}.",
                     'success_description': '',
                     'success_effect': f"gain(appearances: {random_appearance['id']})",
@@ -182,50 +188,210 @@ def get_baby_events(character):
 def get_kid_events(character):
     0 # Should be like get_events but only use kid lifepath (to avoid any weird adult things)
 
-def get_events(character): # CHANGE THIS so it returns a varied list, ie 4 career events, 2 setting events, 3 relationship events
+def get_events(character):
+    # This returns a randomized list of events:
+    # 1 relationship conclusion event for every ending relationship (should usually be 1-2 max)
+    # 1 relationship event for every continuing relationship (should usually be 3 max)
+    # 1 relationship start event if below relationship limit
+    # 1 aging event, if any apply
+    # 1 trait event
+    # 1 keepsake event
+    # 4 lifepath events
+    # 4 setting events
+    RELATIONSHIP_LIMIT = 3
+    LIFEPATH_EVENTS_LIMIT = 4
+    SETTING_EVENTS_LIMIT = 3
+
+    # each lifepath should wind up with around 10-14 events, depending on relationships 
+
+
+    # CONSTRUCT QUERIES
     try:
-        event_dicts = [] # the list of dicts to return
-        used_events = [] # list of event_id's already used, for easier searching
+        setting_query = f"SELECT * FROM events WHERE prereq_type = 'setting' AND prereq_id = '{character.setting}'"
+        lifepath_query = f"SELECT * FROM events WHERE prereq_type = 'lifepath' AND prereq_id = '{character.lifepath}'"
+        age_query = f"SELECT * FROM events WHERE prereq_type = 'age' AND age_min < {character.age} AND age_max > {character.age}"
 
-        # get all events that match character - lifepath, settings (maybe in future, other prereqs)
-        query = f'SELECT * FROM events WHERE '
-        query += f'prereq_type = "lifepath" AND prereq_id = "{character.lifepath["id"]}"'
-        query += f'OR prereq_type = "setting" AND prereq_id = "{character.setting}"'
-        db_possible_events = pd.read_sql_query(query, db)
-        if len(db_possible_events) < int(character.lifepath['years']):
-            raise Exception(console.write_error("Couldn't find enough events for character."))
+        # relationship queries as lists (to make it easier to select by individual rleationship), including separate list for any dying/ending characters
+        starting_relationship_query = f"SELECT * FROM events WHERE event_type = 'relationship_start' AND ( (prereq_type = 'setting' AND prereq_id = '{character.setting}') OR (prereq_type = 'lifepath' AND prereq_id = '{character.lifepath}') )"
+        existing_relationship_queries = []
+        ending_relationship_queries = []
+        if len(character.relationships > 0):
+            relationship_query = "SELECT * FROM events WHERE "
+            for relationship in character.relationships:
+                # if relationship character will reach max_age during this lifepath, add conclusion event
+                if relationship['age'] + character.lifepath['years'] >= relationship['max_age']:
+                    ending_relationship_queries.append(f"SELECT * FROM events WHERE event_type = 'relationship_end' AND prereq_id = '{relationship['id']}'")
+                # otherwise, add normal event
+                else:
+                    existing_relationship_queries.append(f"SELECT * FROM events WHERE prereq_type = 'relationship' AND event_type NOT 'relationship_end' AND prereq_id = '{relationship['id']}'")
 
-        # fill events list with one event per year
-        while len(event_dicts) < int(character.lifepath['years']):
-            random_event = random_row_to_dict(db_possible_events)
-            # check if even is already in list; if not, add it
-            if not random_event['id'] in used_events:
-                event_dicts.append(random_event)
-                used_events.append(random_event['id'])
+        # trait query
+        trait_query = None
+        if len(character.traits > 0):
+            trait_query = "SELECT * FROM events WHERE "
+            for trait in character.traits:
+                trait_query += f"prereq_type = 'trait' AND prereq_id = '{trait['id']}' OR '"
+            trait_query = trait_query[0:-3]
 
+        # keepsake query
+        keepsake_query = None
+        if len(character.keepsakes > 0):
+            keepsake_query = "SELECT * FROM events WHERE "
+            for keepsake in character.keepsakes:
+                keepsake_query += f"prereq_type = 'keepsake' AND prereq_id = '{keepsake['id']}' OR '"
+            keepsake_query = keepsake_query[0:-3]
+
+    except Exception as e:
+        console.write_error(f"Error constructing event queries: {e}")
+
+    # MAKE QUERIES AND FILL EVENT LIST
+    try:
+        event_dicts = []
+
+        # add a relationship-end event for each relationship that will end
+        try:
+            if len(ending_relationship_queries) > 0:
+                for query in ending_relationship_queries:
+                    db_relationship_end = pd.read_sql_query(query, db)
+                    event_dicts.append(random_row_to_dict(db_relationship_end))
+        except Exception as e:
+            console.write_error(f"Error getting relationship conclusion event: {e}") 
+
+        # add relationship event for each relationship
+        try:
+            if len(existing_relationship_queries) > 0:
+                for query in existing_relationship_queries:
+                    db_relationship = pd.read_sql_query(query, db)
+                    event_dicts.append(random_row_to_dict(db_relationship))
+        except Exception as e:
+            console.write_error(f"Error getting relationship event: {e}") 
+
+        # add new relationship if below relationship limit
+        try:
+            if len(character.relationships) < RELATIONSHIP_LIMIT:
+                db_new_relationship = pd.read_sql_query(starting_relationship_query, db)
+                event_dicts.append(random_row_to_dict(db_new_relationship))
+        except Exception as e:
+            console.write_error(f"Error getting relationship start event: {e}") 
+
+        # add an aging event if any
+        try:
+            db_age_events = pd.read_sql_query(age_query, db)
+            if len(db_age_events) > 0:
+                event_dicts.append(random_row_to_dict(db_age_events))
+        except Exception as e:
+            console.write_error(f"Error getting aging event: {e}") 
+
+        # add a trait event
+        try:
+            if len(character.traits) > 0:
+                db_trait_events = pd.read_sql_query(trait_query, db)
+                event_dicts.append(random_row_to_dict(db_trait_events))
+        except Exception as e:
+            console.write_error(f"Error getting trait event: {e}")
+
+        # add a keepsake event
+        try:
+            if len(character.keepsakes) > 0:
+                db_keepsake_events = pd.read_sql_query(keepsake_query, db)
+                event_dicts.append(random_row_to_dict(db_keepsake_events))
+        except Exception as e:
+            console.write_error(f"Error getting keepsake event: {e}")
+
+        # add lifepath events to limit
+        try:
+            db_lifepath_events = pd.read_sql_query(lifepath_query, db)
+            lifepath_event_dicts = db_lifepath_events.to_dict(orient='records')
+            # check that there are enough lifepath events
+            if len(lifepath_event_dicts) < LIFEPATH_EVENTS_LIMIT:
+                raise Exception(f"Couldn't find enough events for lifepath {character.lifepath['id']}")
+            # populate list of random lifepath events
+            chosen_dicts = []
+            while len(chosen_dicts) < LIFEPATH_EVENTS_LIMIT:
+                random_index = random.randint(len(lifepath_event_dicts))
+                chosen_dicts.append(lifepath_event_dicts.pop(random_index))
+            # add those events to event list
+            event_dicts.extend(chosen_dicts)
+        except Exception as e:
+            console.write_error(f"Error getting lifepath events: {e}")
+
+        # add setting events to limit
+        try:
+            db_setting_events = pd.read_sql_query(setting_query, db)
+            setting_event_dicts = db_setting_events.to_dict(orient='records')
+            # check that there are enough setting events
+            if len(setting_event_dicts) < SETTING_EVENTS_LIMIT:
+                raise Exception(f"Couldn't find enough events for setting {character.setting['id']}")
+            # populate list of random setting events
+            chosen_dicts = []
+            while len(chosen_dicts) < SETTING_EVENTS_LIMIT:
+                random_index = random.randint(len(setting_event_dicts))
+                chosen_dicts.append(setting_event_dicts.pop(random_index))
+            # add those events to event list
+            event_dicts.extend(chosen_dicts)
+        except Exception as e:
+            console.write_error(f"Error getting setting events: {e}")
+
+        # randomize event order and return list
+        random.shuffle(event_dicts)
         return event_dicts
+    
     except Exception as e:
         console.write_error(f"Error compiling list of events: {e}") 
 
 def run_event(event_dict, character):
-
+    # rewrite to make test non-random -- skill is above or below threshhold
     try:
-        event_string = event_dict['setup']
-        effects = {}
-        
-        if event_dict['success_description'] != 'NULL' and event_dict['failure_description'] != 'NULL':
 
-            # test -- later, add logic to test whatever is higher, relevant ability or skill
-            if random.randint(1, 10) >= int(event_dict['difficulty']):
-                event_string += f" {event_dict['success_description']}"
-                effects = gameparser.parse_effects(event_dict['success_effect'])
+        success = True
+
+        # write setup
+        console.write(gameparser.parse_pronouns(event_dict['setup'], character))
+
+        # if a test, check score and note whether successful
+        if (event_dict['test_type']) == 'ability':
+            if character.get_ability(event_dict['test_id'])['total'] > event_dict['test_int']:
+                console.write_gain(f"Ability: {event_dict['test_id']} - success!")
             else:
-                event_string += f" {event_dict['failure_description']}"
-                effects = gameparser.parse_effects(event_dict['failure_effect'])
+                console.write_loss(f"Ability: {event_dict['test_id']} - failed!")
+                success = False
 
-            console.write(gameparser.parse_pronouns(event_string, character))
+        elif (event_dict['test_type']) == 'skill':
+            if character.get_skill(event_dict['test_id'])['total'] > event_dict['test_int']:
+                console.write_gain(f"Skill: {event_dict['test_id']} - success!")
+            else:
+                console.write_loss(f"Skill: {event_dict['test_id']} - failed!")
+                success = False
 
-            run_effects(effects, character)
+        elif (event_dict['test_type']) == 'motivation':
+            if character.get_motivation(event_dict['test_id'])['total'] > event_dict['test_int']:
+                console.write_gain(f"Motivation: {event_dict['test_id']} - success!")
+            else:
+                console.write_loss(f"Motivation: {event_dict['test_id']} - failed!")
+                success = False
+
+        # write results
+        if success:
+            console.write(gameparser.parse_pronouns(event_dict['success_description'], character))
+            run_effects(gameparser.parse_effects(event_dict['success_effect']), character)
+        else:
+            console.write(gameparser.parse_pronouns(event_dict['failure_description'], character))
+            run_effects(gameparser.parse_effects(event_dict['failure_effect']), character)
+
+        # if event_dict['success_description'] != 'NULL' and event_dict['failure_description'] != 'NULL':
+
+        #     # test -- later, add logic to test whatever is higher, relevant ability or skill
+        #     if random.randint(1, 10) >= int(event_dict['difficulty']):
+        #         event_string += f" {event_dict['success_description']}"
+        #         effects = gameparser.parse_effects(event_dict['success_effect'])
+        #     else:
+        #         event_string += f" {event_dict['failure_description']}"
+        #         effects = gameparser.parse_effects(event_dict['failure_effect'])
+
+        #     console.write(gameparser.parse_pronouns(event_string, character))
+
+        #     run_effects(effects, character)
+
     except Exception as e:
         console.write_error(f"Error running event {event_dict['id']}: {e}") 
 

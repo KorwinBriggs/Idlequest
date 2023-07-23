@@ -87,33 +87,37 @@ if __name__ == '__main__':
                   baby_lifepath = gamelogic.baby_lifepath_from_setting(main_character.setting)
                   main_character.change_lifepath(baby_lifepath)
                   events_list = gamelogic.get_baby_events(main_character)
+                  years_per_event = main_character.lifepath['years'] / len(events_list)
 
                # if baby, grow to kid  
                elif main_character.lifepath['baby'] == 'true': # if just finished being baby
                   kid_lifepath = gamelogic.kid_lifepath_from_setting(main_character.setting)
                   main_character.change_lifepath(kid_lifepath)
                   events_list = gamelogic.get_events(main_character)
+                  years_per_event = main_character.lifepath['years'] / len(events_list)
 
-               # if age is super old, run postscript
-               elif main_character.age >= 60:
-                  console.write("Grown to adult.") # end game for now
+               # if age is super old or sick, run postscript
+               elif main_character.age >= 90 or main_character.abilities['health'] == 0:
+                  console.write("End of game.") # end game for now
                   game_running = gamelogic.end_game()
 
                # otherwise, game runs a situation and then offers a choice of opportunities
                else:
                   situation = gamelogic.get_situation(main_character.setting)
                   gamelogic.run_situation(situation, main_character)
+
                   opportunities = gamelogic.get_opportunities(situation, main_character)
                   chosen_opportunity = gamelogic.choose_opportunity(opportunities)
+
                   new_lifepath = gamelogic.run_opportunity(chosen_opportunity, main_character)
                   main_character.change_lifepath(new_lifepath)
                   events_list = gamelogic.get_events(main_character)
-                  # console.write("Grown to adult.") # end game for now
-                  # game_running, clock_running = gamelogic.end_game()
+                  years_per_event = main_character.lifepath['years'] / len(events_list)
                
          # RUN EVENT: choose first event on list, run it, remove it from list
          event_to_run = events_list[0]
          gamelogic.run_event(event_to_run, main_character)
+         main_character.age += years_per_event
          events_list.pop(0)
 
 

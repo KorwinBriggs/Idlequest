@@ -32,6 +32,9 @@ CREATE TABLE settings(
    skills TEXT,
    abilities TEXT,
    motivations TEXT,
+   traits TEXT,
+   keepsakes TEXT,
+   relationships TEXT,
    notes TEXT
 );
 
@@ -69,6 +72,8 @@ CREATE TABLE skills(
    settings TEXT,
    category TEXT,
    description TEXT,
+   ability1 TEXT,
+   ability2 TEXT,
    notes TEXT
 );
 
@@ -77,12 +82,13 @@ CREATE TABLE lifepaths(
    name TEXT NOT NULL,
    setting TEXT NOT NULL,
    years INTEGER NOT NULL,
-   events INTEGER NOT NULL,
+   start_bonus TEXT,
    skills TEXT,
    abilities TEXT,
    motivations TEXT,
    traits TEXT,
    keepsakes TEXT,
+   relationships TEXT,
    description TEXT,
    baby INTEGER NOT NULL,
    kid INTEGER NOT NULL,
@@ -112,7 +118,10 @@ CREATE TABLE relationships(
    end_age_min INTEGER NOT NULL,
    end_age_max INTEGER NOT NULL,
    meet_event TEXT NOT NULL,
-   death_event TEXT NOT NULL,
+   conclusion_event TEXT NOT NULL,
+   skills TEXT,
+   abilities TEXT,
+   motivations TEXT,
    notes TEXT
 );
 
@@ -121,9 +130,10 @@ CREATE TABLE events(
    name TEXT NOT NULL,
    prereq_type TEXT NOT NULL,
    prereq_id TEXT NOT NULL,
+   event_type TEXT NOT NULL,
    test_type TEXT,
    test_id TEXT,
-   difficulty INT NOT NULL,
+   test_int INT,
    setup TEXT NOT NULL,
    success_description TEXT,
    success_effect TEXT,

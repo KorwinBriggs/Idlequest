@@ -26,25 +26,31 @@ class character:
 
 
         self.appearances = {}
-        # list of appearances by id.
+        # dict of appearances by id.
 
         self.abilities = self.__character_creation_abilities()
-        # list of abilities by id, range 0 to 10
+        # dict of abilities by id, range 0 to 5
+        self.ABILITY_MAX = 5
+        self.ABILITY_MIN = 0
 
         self.skills = self.__character_creation_skills()
-        # list of all skills by id and their levels. range 0 to 10
+        # dict of all skills by id and their levels. range 0 to 10
+        self.SKILL_MAX = 10
+        self.SKILL_MIN = 0
 
         self.motivations = self.__character_creation_motivations()
-        # list of motivations by id, range -5 to 5
+        # dict of motivations by id, range -5 to 5
+        self.MOTIVATION_MAX = 5
+        self.MOTIVATION_MIN = -5
 
         self.traits = {}
-        # list of traits by id
+        # dicts of traits with key of trait_id. includes modifiers
 
         self.keepsakes = {}
-        # list of posessions by id
+        # like traits, but keepsakes
 
         self.relationships = {}
-        # list of relationships, including their names, ages, 
+        # like traits, but relationships (includes ages and names)
 
         self.setting = setting
         # current setting id
@@ -141,7 +147,7 @@ class character:
             else:
                 # establish return_dict, add empty traits/keepsakes sections, default total to character skill ranks
                 return_dict = self.skills[skill_id]
-                return_dict['modifiers'] = {'traits': {}, 'keepsakes': {}}
+                return_dict['modifiers'] = {'abilities': {}, 'traits': {}, 'keepsakes': {}}
                 return_dict['total'] = return_dict['rank'] 
 
                 # go through each trait and compile relevant modifiers
@@ -162,6 +168,16 @@ class character:
                             # and update the total
                             return_dict['total'] += self.keepsakes[keepsake]['modifiers']['skills'][skill_id]
                 
+                # get relevant abilities and their average
+                ability1 = self.skills[skill_id]['ability1']
+                ability2 = self.skills[skill_id]['ability2']
+                return_dict['modifiers']['abilities'][ability1] = self.get_ability(ability1)['total']
+                return_dict['modifiers']['abilities'][ability2] = self.get_ability(ability2)['total']
+                return_dict['modifiers']['abilities']['average'] = (return_dict['modifiers']['abilities'][ability1] + return_dict['modifiers']['abilities'][ability2]) / 2
+                # if 'total' is less than the relevant ability average, use the average
+                if return_dict['total'] < return_dict['modifiers']['abilities']['average']:
+                    return_dict['total'] = return_dict['modifiers']['abilities']['average']
+
                 return return_dict
             
         except Exception as e:
@@ -175,8 +191,8 @@ class character:
             stat, change, success, message = 'skill', 'gain', True, ''
             self.skills[skill_id]['rank'] += num
             
-            if self.skills[skill_id]['rank'] > 10:
-                self.skills[skill_id]['rank'] = 10
+            if self.skills[skill_id]['rank'] > self.SKILL_MAX:
+                self.skills[skill_id]['rank'] = self.SKILL_MAX
                 success = False
                 message = f"Skill: {self.skills[skill_id]['name'].capitalize()} can't go higher!"
             else:
@@ -196,8 +212,8 @@ class character:
             stat, change, success, message = 'skill', 'loss', True, ''
             self.skills[skill_id]['rank'] -= num
             
-            if self.skills[skill_id]['rank'] < 0:
-                self.skills[skill_id]['rank'] = 0
+            if self.skills[skill_id]['rank'] < self.SKILL_MIN:
+                self.skills[skill_id]['rank'] = self.SKILL_MIN
                 success = False
                 message = f"Skill: {self.skills[skill_id]['name'].capitalize()} can't go lower!"
             else:
@@ -252,10 +268,10 @@ class character:
             stat, change, success, message = 'ability', 'gain', True, ''
             self.abilities[ability_id]['rank'] += num
 
-            if self.abilities[ability_id]['rank'] > 10:
-                self.abilities[ability_id]['rank'] = 10
+            if self.abilities[ability_id]['rank'] > self.ABILITY_MAX:
+                self.abilities[ability_id]['rank'] = self.ABILITY_MAX
                 success = False
-                message = f"Ability: {self.abilities['ability_id']['name'].capitalize()} can't go higher!"
+                message = f"Ability: {self.abilities[ability_id]['name'].capitalize()} can't go higher!"
             else:
                 message = f"+ Ability: {self.abilities[ability_id]['name'].capitalize()}"
 
@@ -271,8 +287,8 @@ class character:
             stat, change, success, message = 'ability', 'loss', True, ''
             self.abilities[ability_id]['rank'] -= num
             
-            if self.abilities[ability_id]['rank'] < 0:
-                self.abilities[ability_id]['rank'] = 0
+            if self.abilities[ability_id]['rank'] < self.ABILITY_MIN:
+                self.abilities[ability_id]['rank'] = self.ABILITY_MIN
                 success = False
                 message = f"Ability: {self.abilities['ability_id']['name'].capitalize()} can't go lower!"
             else:
@@ -356,12 +372,12 @@ class character:
                 self.motivations[motivation_id]['rank'] -= num
 
             # if above limit, bring down to limit
-            if self.motivations[motivation_id]['rank'] > 5:
-                self.motivations[motivation_id]['rank'] = 5
+            if self.motivations[motivation_id]['rank'] > self.MOTIVATION_MAX:
+                self.motivations[motivation_id]['rank'] = self.MOTIVATION_MAX
                 success = False
                 message = f"Motivation: {motivation.capitalize()} can't go higher!"
-            elif self.motivations[motivation_id]['rank'] < -5:
-                self.motivations[motivation_id]['rank'] = -5
+            elif self.motivations[motivation_id]['rank'] < self.MOTIVATION_MIN:
+                self.motivations[motivation_id]['rank'] = self.MOTIVATION_MIN
                 success = False
                 message = f"Motivation: {motivation.capitalize()} can't go higher!"
             else:   
@@ -389,12 +405,12 @@ class character:
                 self.motivations[motivation_id]['rank'] += num
 
             # if above limit, bring down to limit
-            if self.motivations[motivation_id]['rank'] > 5:
-                self.motivations[motivation_id]['rank'] = 5
+            if self.motivations[motivation_id]['rank'] > self.MOTIVATION_MAX:
+                self.motivations[motivation_id]['rank'] = self.MOTIVATION_MAX
                 success = False
                 message = f"Motivation: {motivation.capitalize()} can't go lower!"
-            elif self.motivations[motivation_id]['rank'] < -5:
-                self.motivations[motivation_id]['rank'] = -5
+            elif self.motivations[motivation_id]['rank'] < self.MOTIVATION_MIN:
+                self.motivations[motivation_id]['rank'] = self.MOTIVATION_MIN
                 success = False
                 message = f"Motivation: {motivation.capitalize()} can't go lower!"
             # return statement
@@ -603,9 +619,6 @@ class character:
 
     def change_lifepath(self, lifepath_id): # make it add a trait from new one, and keepsake from old one if setting change
         try:
-            # push old lifepath details into history
-            # ...later
-
             # load new lifepath details from db
             db_lifepath = pd.read_sql_query(f"SELECT * FROM lifepaths WHERE id = '{lifepath_id}'", db)
             if len(db_lifepath) == 0:
@@ -613,7 +626,7 @@ class character:
             lifepath = row_to_dict(db_lifepath)
             self.lifepath = lifepath
             self.setting = lifepath['setting']
-
+            self.update_stats(gameparser.parse_effects(self.lifepath['start_bonus']))
         except Exception as e:
             console.write_error(f"Error moving character to lifepath {lifepath_id}: {e}")
 
@@ -635,7 +648,7 @@ class character:
             }
         raise Exception(f"Problem assigning pronouns for gender {gender}")
     
-    def __character_creation_skills(self): # rewrite this for each table; skills 0, abilities 2-4, health 10, wealth by setting
+    def __character_creation_skills(self):
         try:
             db_dataframe = pd.read_sql_query(f"SELECT * FROM skills WHERE id IS NOT NULL", db)
             if len(db_dataframe) == 0:
@@ -658,7 +671,9 @@ class character:
             result_dict = {}
             for entry in db_dict:
                 result_dict[entry['id']] = entry
-                result_dict[entry['id']]['rank'] = random.randint(2,4)
+                result_dict[entry['id']]['rank'] = random.randint(1,3)
+            result_dict['health'] = 10
+            result_dict['wealth'] = 0
             return result_dict
         except Exception as e:
             console.write_error(f"Error adding default values from skills table: {e}")
@@ -673,8 +688,6 @@ class character:
             for entry in db_dict:
                 result_dict[entry['id']] = entry
                 result_dict[entry['id']]['rank'] = 0
-            result_dict['health'] = 10
-            result_dict['wealth'] = 0
             return result_dict
         except Exception as e:
             console.write_error(f"Error adding default values from skills table: {e}")
