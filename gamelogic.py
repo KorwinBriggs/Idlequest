@@ -159,7 +159,7 @@ def get_baby_events(character):
                     'event_type': 'gain',
                     'test_type': '',
                     'test_id': '',
-                    'test_int': 0,
+                    'test_min': 0,
                     'age_min': 0,
                     'age_max': 4,
                     'setup': f"{appearance_setups[len(events)]} {random_appearance['name']}.",
@@ -350,21 +350,21 @@ def run_event(event_dict, character):
 
         # if a test, check score and note whether successful
         if (event_dict['test_type']) == 'ability':
-            if character.get_ability(event_dict['test_id'])['total'] > event_dict['test_int']:
+            if character.get_ability(event_dict['test_id'])['total'] > event_dict['test_min']:
                 console.write_gain(f"Ability: {event_dict['test_id']} - success!")
             else:
                 console.write_loss(f"Ability: {event_dict['test_id']} - failed!")
                 success = False
 
         elif (event_dict['test_type']) == 'skill':
-            if character.get_skill(event_dict['test_id'])['total'] > event_dict['test_int']:
+            if character.get_skill(event_dict['test_id'])['total'] > event_dict['test_min']:
                 console.write_gain(f"Skill: {event_dict['test_id']} - success!")
             else:
                 console.write_loss(f"Skill: {event_dict['test_id']} - failed!")
                 success = False
 
         elif (event_dict['test_type']) == 'motivation':
-            if character.get_motivation(event_dict['test_id'])['total'] > event_dict['test_int']:
+            if character.get_motivation(event_dict['test_id'])['total'] > event_dict['test_min']:
                 console.write_gain(f"Motivation: {event_dict['test_id']} - success!")
             else:
                 console.write_loss(f"Motivation: {event_dict['test_id']} - failed!")
@@ -726,11 +726,50 @@ def choose_opportunity(opportunity_dict_list, character):
         console.write_error(f"Error choosing opportunities: {e}") 
 
 def run_opportunity(opportunity_dict, character):
-    0
     # run chosen opportunity, including any changes to character.
     # returns opportunity's lifepath id, 
+    try:
+
+        success = True
+
+        # write setup
+        console.write(gameparser.parse_pronouns(opportunity_dict['setup'], character))
+
+        # if a test, check score and note whether successful
+        if (opportunity_dict['test_type']) == 'ability':
+            if character.get_ability(opportunity_dict['test_id'])['total'] > opportunity_dict['test_min']:
+                console.write_gain(f"Ability: {opportunity_dict['test_id']} - success!")
+            else:
+                console.write_loss(f"Ability: {opportunity_dict['test_id']} - failed!")
+                success = False
+
+        elif (opportunity_dict['test_type']) == 'skill':
+            if character.get_skill(opportunity_dict['test_id'])['total'] > opportunity_dict['test_min']:
+                console.write_gain(f"Skill: {opportunity_dict['test_id']} - success!")
+            else:
+                console.write_loss(f"Skill: {opportunity_dict['test_id']} - failed!")
+                success = False
+
+        elif (opportunity_dict['test_type']) == 'motivation':
+            if character.get_motivation(opportunity_dict['test_id'])['total'] > opportunity_dict['test_min']:
+                console.write_gain(f"Motivation: {opportunity_dict['test_id']} - success!")
+            else:
+                console.write_loss(f"Motivation: {opportunity_dict['test_id']} - failed!")
+                success = False
+
+        # write results
+        if success:
+            console.write(gameparser.parse_pronouns(opportunity_dict['success_description'], character))
+            run_effects(gameparser.parse_effects(opportunity_dict['success_effect']), character)
+        else:
+            console.write(gameparser.parse_pronouns(opportunity_dict['failure_description'], character))
+            run_effects(gameparser.parse_effects(opportunity_dict['failure_effect']), character)
+
+    except Exception as e:
+        console.write_error(f"Error running opportunity {opportunity_dict['id']}: {e}")    
 
     # NOTE TO SELF - reconsole.write choice descriptions to be more personal and evocative
+
 
 def end_game():
     console.write("Game Shutting Down...")

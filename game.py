@@ -117,7 +117,7 @@ if __name__ == '__main__':
          # RUN EVENT: choose first event on list, run it, remove it from list
          event_to_run = events_list[0]
          gamelogic.run_event(event_to_run, main_character)
-         main_character.age += years_per_event
+         main_character.age(years_per_event)
          events_list.pop(0)
 
 

@@ -51,6 +51,11 @@ CREATE TABLE abilities(
    id TEXT PRIMARY KEY,
    name TEXT,
    type TEXT,
+   super_low TEXT,
+   low TEXT,
+   average TEXT,
+   high TEXT,
+   super_high TEXT,
    notes TEXT
 );
 
@@ -90,6 +95,8 @@ CREATE TABLE lifepaths(
    keepsakes TEXT,
    relationships TEXT,
    description TEXT,
+   wealth INTEGER NOT NULL,
+   fame INTEGER NOT NULL,
    baby INTEGER NOT NULL,
    kid INTEGER NOT NULL,
    notes TEXT
@@ -133,7 +140,7 @@ CREATE TABLE events(
    event_type TEXT NOT NULL,
    test_type TEXT,
    test_id TEXT,
-   test_int INT,
+   test_min INT,
    setup TEXT NOT NULL,
    success_description TEXT,
    success_effect TEXT,

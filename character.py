@@ -133,6 +133,8 @@ class character:
                         return_list.append(self.gain_appearance(appearance))
                     elif mod < 0:
                         return_list.append(self.lose_appearance(appearance))
+            if 'lifepaths' in stats_dict:
+                self.change_lifepath(stats_dict['lifepaths'][0]['id'])
             return return_list
         except Exception as e:
             console.write_error(f"Error updating character stats: {e}")
@@ -626,10 +628,19 @@ class character:
             lifepath = row_to_dict(db_lifepath)
             self.lifepath = lifepath
             self.setting = lifepath['setting']
+            self.abilities['wealth'] = lifepath['wealth']
+            self.abilities['fame'] = lifepath['fame']
             self.update_stats(gameparser.parse_effects(self.lifepath['start_bonus']))
         except Exception as e:
             console.write_error(f"Error moving character to lifepath {lifepath_id}: {e}")
 
+    def age(self, years):
+        self.age += years
+        for relationship in self.relationships:
+            relationship['age'] += years
+
+    def get_age(self):
+        return int(self.age)
 
     def __character_creation_pronouns(self, name, gender):
         if gender == "male":
@@ -672,8 +683,10 @@ class character:
             for entry in db_dict:
                 result_dict[entry['id']] = entry
                 result_dict[entry['id']]['rank'] = random.randint(1,3)
-            result_dict['health'] = 10
-            result_dict['wealth'] = 0
+            result_dict['health'] = self.ABILITY_MAX
+            result_dict['wealth'] = self.ABILITY_MIN
+            result_dict['fame'] = self.ABILITY_MIN
+            result_dict['reputation'] = self.ABILITY_MIN
             return result_dict
         except Exception as e:
             console.write_error(f"Error adding default values from skills table: {e}")
