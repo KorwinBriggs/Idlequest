@@ -28,20 +28,20 @@ class character:
         self.appearances = {}
         # dict of appearances by id.
 
-        self.abilities = self.__character_creation_abilities()
-        # dict of abilities by id, range 0 to 5
         self.ABILITY_MAX = 5
         self.ABILITY_MIN = 0
+        self.abilities = self.__character_creation_abilities()
+        # dict of abilities by id, range 0 to 5
 
-        self.skills = self.__character_creation_skills()
-        # dict of all skills by id and their levels. range 0 to 10
         self.SKILL_MAX = 10
         self.SKILL_MIN = 0
+        self.skills = self.__character_creation_skills()
+        # dict of all skills by id and their levels. range 0 to 10
 
-        self.motivations = self.__character_creation_motivations()
-        # dict of motivations by id, range -5 to 5
         self.MOTIVATION_MAX = 5
         self.MOTIVATION_MIN = -5
+        self.motivations = self.__character_creation_motivations()
+        # dict of motivations by id, range -5 to 5
 
         self.traits = {}
         # dicts of traits with key of trait_id. includes modifiers

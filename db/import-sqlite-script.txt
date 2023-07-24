@@ -141,6 +141,8 @@ CREATE TABLE events(
    test_type TEXT,
    test_id TEXT,
    test_min INT,
+   age_min INT,
+   age_max INT,
    setup TEXT NOT NULL,
    success_description TEXT,
    success_effect TEXT,
