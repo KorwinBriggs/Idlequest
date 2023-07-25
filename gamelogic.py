@@ -207,23 +207,25 @@ def get_events(character):
 
     # CONSTRUCT QUERIES
     try:
-        setting_query = f"SELECT * FROM events WHERE prereq_type = 'setting' AND prereq_id = '{character.setting}'"
-        lifepath_query = f"SELECT * FROM events WHERE prereq_type = 'lifepath' AND prereq_id = '{character.lifepath}'"
-        age_query = f"SELECT * FROM events WHERE prereq_type = 'age' AND age_min < {character.age} AND age_max > {character.age}"
+        query_start = f"SELECT * FROM events WHERE "
+        query_end = f" AND age_min < {character.age} AND age_max > {character.age}"
+
+        setting_query = query_start + f"prereq_type = 'setting' AND prereq_id = '{character.setting}'" + query_end
+        lifepath_query = query_start + f"prereq_type = 'lifepath' AND prereq_id = '{character.lifepath}'" + query_end
+        age_query = query_start + f"prereq_type = 'age'" + query_end
 
         # relationship queries as lists (to make it easier to select by individual rleationship), including separate list for any dying/ending characters
-        starting_relationship_query = f"SELECT * FROM events WHERE event_type = 'relationship_start' AND ( (prereq_type = 'setting' AND prereq_id = '{character.setting}') OR (prereq_type = 'lifepath' AND prereq_id = '{character.lifepath}') )"
+        starting_relationship_query = query_start + f"event_type = 'relationship_start' AND ( (prereq_type = 'setting' AND prereq_id = '{character.setting}') OR (prereq_type = 'lifepath' AND prereq_id = '{character.lifepath}') )" + query_end
         existing_relationship_queries = []
         ending_relationship_queries = []
         if len(character.relationships > 0):
-            relationship_query = "SELECT * FROM events WHERE "
             for relationship in character.relationships:
                 # if relationship character will reach max_age during this lifepath, add conclusion event
                 if relationship['age'] + character.lifepath['years'] >= relationship['max_age']:
-                    ending_relationship_queries.append(f"SELECT * FROM events WHERE event_type = 'relationship_end' AND prereq_id = '{relationship['id']}'")
+                    ending_relationship_queries.append(query_start + f"event_type = 'relationship_end' AND prereq_id = '{relationship['id']}'" + query_end)
                 # otherwise, add normal event
                 else:
-                    existing_relationship_queries.append(f"SELECT * FROM events WHERE prereq_type = 'relationship' AND event_type NOT 'relationship_end' AND prereq_id = '{relationship['id']}'")
+                    existing_relationship_queries.append(query_start + f"prereq_type = 'relationship' AND event_type NOT 'relationship_end' AND prereq_id = '{relationship['id']}'" + query_end)
 
         # trait query
         trait_query = None
@@ -378,20 +380,6 @@ def run_event(event_dict, character):
             console.write(gameparser.parse_pronouns(event_dict['failure_description'], character))
             run_effects(gameparser.parse_effects(event_dict['failure_effect']), character)
 
-        # if event_dict['success_description'] != 'NULL' and event_dict['failure_description'] != 'NULL':
-
-        #     # test -- later, add logic to test whatever is higher, relevant ability or skill
-        #     if random.randint(1, 10) >= int(event_dict['difficulty']):
-        #         event_string += f" {event_dict['success_description']}"
-        #         effects = gameparser.parse_effects(event_dict['success_effect'])
-        #     else:
-        #         event_string += f" {event_dict['failure_description']}"
-        #         effects = gameparser.parse_effects(event_dict['failure_effect'])
-
-        #     console.write(gameparser.parse_pronouns(event_string, character))
-
-        #     run_effects(effects, character)
-
     except Exception as e:
         console.write_error(f"Error running event {event_dict['id']}: {e}") 
 
@@ -473,7 +461,6 @@ def get_opportunities(situation_dict, character):
        
     try:
         # If there's space in the list, add a continuation opportunity, if available
-        
         if normal_opportunities_to_add > 0 :
             if len(db_continuation_opportunity) > 0:
                 opportunity_choices.append(continuation_opportunity)
@@ -845,3 +832,5 @@ if __name__ == "__main__":
     opportunities = get_opportunities(situation, testperson)
     console.write("Opportunities:")
     choice = choose_opportunity(opportunities, testperson)
+    console.write(choice)
+    run_opportunity(choice, testperson)

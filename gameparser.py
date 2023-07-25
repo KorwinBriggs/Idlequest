@@ -25,7 +25,7 @@ def parse_effects(string):
     words_list = re.split(r'\(|\)|:\s|,\s', string)
 
     # get sublists per command
-    command_words = ["gain", "gainOne", "lose", "loseOne"]
+    command_words = ["gain", "gainOne", "lose", "loseOne", "update"]
     subsections_by_commands = divide_list_at_keywords(words_list, command_words)
 
     for command_subsection in subsections_by_commands:
@@ -63,7 +63,7 @@ def parse_effects(string):
                 for item_id, item_mod in items[item_type].items(): # ex 'farming', 1
                     # if loseOne, make modifier negative
                     if command == 'loseOne':
-                        item_mod *= 1
+                        item_mod *= -1
                     random_item_list.append({'type': item_type, 'id': item_id, 'mod': item_mod})
             # choose random entry from list
             random_item = random_item_list[random.randint(0, len(random_item_list)-1)]
@@ -76,6 +76,16 @@ def parse_effects(string):
             # if not, add new entry
             else:
                 result[item_type][item_id] = item_mod
+
+        # if update, take next two relationship or keepsake ids and stick it in results like
+        # {relationships: {young_friend: old_friend}}
+        elif command == 'update':
+            for item_type in items: # ex 'relationships'
+                id_list = list(items[item_type].keys())
+                print(id_list)
+                old_item = id_list[0]
+                new_item = id_list[1]
+                result[item_type][old_item] = new_item
 
     return result
 
@@ -165,8 +175,7 @@ if __name__ == "__main__":
     # print(parse_effects("gainOne(motivations: adventurous, lazy, rebellious, skills: farming), loseOne(skills: herding, animal_handling), gain(traits: jolly+2), lose(abilities: strength, resolve)"))
     # # print(parse_items("motivations: adventurous, lazy, rebellious, skills: farming, lifepaths: peasant_farmer, kid_peasant, settings: peasant"))
     # print(parse_effects("gainOne(skills: intimidation, abilities: resolve, social_sense), gainOne(motivations: loyal, social, adventurous)"))
-    print(parse_effects("gain(relationships: pet_dog, abilities: resolve, social_sense)"))
-    
+    print(parse_effects("gain(relationships: pet_dog, abilities: resolve, social_sense), update(relationships: young_friend, old_friend)"))
 
     print(parse_items("motivations: adventurous, relationships: pet_dog"))
 

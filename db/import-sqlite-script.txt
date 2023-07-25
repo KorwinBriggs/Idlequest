@@ -114,6 +114,7 @@ CREATE TABLE keepsakes(
 
 CREATE TABLE relationships(
    id TEXT PRIMARY KEY,
+   descriptor TEXT NOT NULL,
    name TEXT NOT NULL,
    namegen TEXT,
    gender TEXT NOT NULL,
@@ -160,8 +161,9 @@ CREATE TABLE opportunities(
    motivations TEXT,
    abilities TEXT,
    skills TEXT,
-   risk TEXT,
-   difficulty INTEGER NOT NULL,
+   test_type TEXT,
+   test_id TEXT,
+   test_min INT,
    setup TEXT NOT NULL,
    success_description TEXT,
    success_effects TEXT,

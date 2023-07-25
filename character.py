@@ -111,28 +111,40 @@ class character:
                         return_list.append(self.lose_motivation(motivation, mod))
             if 'traits' in stats_dict:
                 for trait, mod in stats_dict['traits'].items():
-                    if mod > 0:
-                        return_list.append(self.gain_trait(trait))
-                    elif mod < 0:
-                        return_list.append(self.lose_trait(trait))
+                    if isinstance(mod, int):
+                        if mod > 0:
+                            return_list.append(self.gain_trait(trait))
+                        elif mod < 0:
+                            return_list.append(self.lose_trait(trait))
+                    else:
+                        return_list.append(self.change_trait(trait, mod))
             if 'keepsakes' in stats_dict:
                 for keepsake, mod in stats_dict['keepsakes'].items():
-                    if mod > 0:
-                        return_list.append(self.gain_keepsake(keepsake))
-                    elif mod < 0:
-                        return_list.append(self.lose_keepsake(keepsake))
+                    if isinstance(mod, int):
+                        if mod > 0:
+                            return_list.append(self.gain_keepsake(keepsake))
+                        elif mod < 0:
+                            return_list.append(self.lose_keepsake(keepsake))
+                    else:
+                        return_list.append(self.change_keepsake(keepsake, mod))
             if 'relationships' in stats_dict:
                 for relationship, mod in stats_dict['relationships'].items():
-                    if mod > 0:
-                        return_list.append(self.gain_relationship(relationship))
-                    elif mod < 0:
-                        return_list.append(self.lose_relationship(relationship))
+                    if isinstance(mod, int):
+                        if mod > 0:
+                            return_list.append(self.gain_relationship(relationship))
+                        elif mod < 0:
+                            return_list.append(self.lose_relationship(relationship))
+                    else:
+                        return_list.append(self.change_relationship(relationship, mod))
             if 'appearances' in stats_dict:
                 for appearance, mod in stats_dict['appearances'].items():
-                    if mod > 0:
-                        return_list.append(self.gain_appearance(appearance))
-                    elif mod < 0:
-                        return_list.append(self.lose_appearance(appearance))
+                    if isinstance(mod, int):
+                        if mod > 0:
+                            return_list.append(self.gain_appearance(appearance))
+                        elif mod < 0:
+                            return_list.append(self.lose_appearance(appearance))
+                    else:
+                        return_list.append(self.change_appearance(appearance, mod))
             if 'lifepaths' in stats_dict:
                 self.change_lifepath(stats_dict['lifepaths'][0]['id'])
             return return_list
@@ -469,18 +481,33 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing trait {trait_id} from character: {e}")
 
-    def gain_relationship(self, relationship_id, name=None):
+    def change_trait(self, old_trait_id, new_trait_id):
+        try:
+            stat, change, success, message = 'trait', 'change', True, ''
+
+            if old_trait_id not in self.traits:
+                raise Exception(f"Character does not have trait {old_trait_id}")
+            else:
+                old_trait_name = self.traits[old_trait_id]['name'].capitalize()
+                self.lose_trait(old_trait_id)
+                self.gain_trait(new_trait_id)
+                new_trait_name = self.traits[new_trait_id]['name'].capitalize()
+                message = f"Trait lost: {old_trait_name}; Trait gained: {new_trait_name}"
+                return {'stat': stat, 'change': change, 'success': success, 'message': message}
+            
+        except Exception as e:
+            console.write_error(f"Error updating trait {old_trait_id} to {new_trait_id}: {e}")
+
+    def gain_relationship(self, relationship_id, name=None, age=None):
         try:
             stat, change, success, message = 'relationship', 'gain', True, ''
 
-            print(f"gaining relationship {relationship_id}")
             if relationship_id not in self.traits:
                 # get trait info from db
                 db_relationship = pd.read_sql_query(f"SELECT * FROM relationships WHERE id = '{relationship_id}'", db)
                 if len(db_relationship) == 0:
                     raise Exception(f"Could not find relationship: {relationship_id}")
                 relationship_dict = row_to_dict(db_relationship)
-                print(f"relationship_dict: {relationship_dict}")
 
                 # generate name if none provided
                 if name == None:
@@ -493,16 +520,20 @@ class character:
                         else:
                             name += random_row_to_dict(db_name_part)['name']
                         name += ' '
-                relationship_dict['name'] = name.strip()
-                print(f"name: {name}")
+                    relationship_dict['name'] = name.strip()
+                else:
+                    relationship_dict['name'] = name
 
                 # generate starting age
-                relationship_dict['age'] = random.randint(relationship_dict['start_age_min'], relationship_dict['start_age_max'])
+                if age == None:
+                    relationship_dict['age'] = random.randint(relationship_dict['start_age_min'], relationship_dict['start_age_max'])
+                else:
+                    relationship_dict['age'] = age
                 relationship_dict['max_age'] = random.randint(relationship_dict['end_age_min'], relationship_dict['end_age_max'])
 
                 # save relationship dict to traits
                 self.relationships[relationship_id] = relationship_dict
-                message = f"relationship gained: {self.relationships[relationship_id]['name'].capitalize()}"
+                message = f"Relationship gained: {self.relationships[relationship_id]['name'].capitalize()}"
             else:
                 message = f"Already had relationship: {self.relationships[relationship_id]['name'].capitalize()}"
                 success = False
@@ -511,7 +542,7 @@ class character:
         
         except Exception as e:
             console.write_error(f"Error adding relationship {relationship_id} to character: {e}")
-    
+
     def lose_relationship(self, relationship_id):
         try:
             stat, change, success, message = 'relationship', 'loss', True, ''
@@ -531,6 +562,24 @@ class character:
         
         except Exception as e:
             console.write_error(f"Error removing relationship {relationship_id} from character: {e}")
+
+    def change_relationship(self, old_relationship_id, new_relationship_id):
+        try:
+            stat, change, success, message = 'relationship', 'change', True, ''
+
+            if old_relationship_id not in self.relationships:
+                raise Exception(f"Character does not have relationship {old_relationship_id}")
+            else:
+                name = self.relationships[old_relationship_id]['name']
+                age = self.relationships[old_relationship_id]['age']
+                self.lose_relationship(old_relationship_id)
+                self.gain_relationship(new_relationship_id, name, age)
+
+                message = f"{name} has become a {self.relationships[new_relationship_id]['descriptor']}"
+                return {'stat': stat, 'change': change, 'success': success, 'message': message}
+            
+        except Exception as e:
+            console.write_error(f"Error updating relationship {old_relationship_id} to {new_relationship_id}: {e}")
 
     def gain_keepsake(self, keepsake_id):
         try:
@@ -578,6 +627,23 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing keepsake {keepsake_id} from character: {e}")
 
+    def change_keepsake(self, old_keepsake_id, new_keepsake_id):
+        try:
+            stat, change, success, message = 'keepsake', 'change', True, ''
+
+            if old_keepsake_id not in self.keepsakes:
+                raise Exception(f"Character does not have keepsake {old_keepsake_id}")
+            else:
+                old_keepsake_name = self.keepsakes[old_keepsake_id]['name'].capitalize()
+                self.lose_keepsake(old_keepsake_id)
+                self.gain_keepsake(new_keepsake_id)
+                new_keepsake_name = self.keepsakes[new_keepsake_id]['name'].capitalize()
+                message = f"Keepsake lost: {old_keepsake_name}; Keepsake gained: {new_keepsake_name}"
+                return {'stat': stat, 'change': change, 'success': success, 'message': message}
+            
+        except Exception as e:
+            console.write_error(f"Error updating keepsake {old_keepsake_id} to {new_keepsake_id}: {e}")
+
     def gain_appearance(self, appearance_id):
         try:
             # print(f'gain_appearance called: {appearance_id}')
@@ -619,7 +685,25 @@ class character:
         except Exception as e:
             console.write_error(f"Error removing appearance {appearance_id} from character: {e}")
 
-    def change_lifepath(self, lifepath_id): # make it add a trait from new one, and keepsake from old one if setting change
+    def change_appearance(self, old_appearance_id, new_appearance_id):
+
+        try:
+            stat, change, success, message = 'appearance', 'change', True, ''
+
+            if old_appearance_id not in self.appearances:
+                raise Exception(f"Character does not have appearance {old_appearance_id}")
+            else:
+                old_appearance_name = self.appearances[old_appearance_id]['name'].capitalize()
+                self.lose_appearance(old_appearance_id)
+                self.gain_appearance(new_appearance_id)
+                new_appearance_name = self.appearances[new_appearance_id]['name'].capitalize()
+                message = f"appearance lost: {old_appearance_name}; appearance gained: {new_appearance_name}"
+                return {'stat': stat, 'change': change, 'success': success, 'message': message}
+            
+        except Exception as e:
+            console.write_error(f"Error updating appearance {old_appearance_id} to {new_appearance_id}: {e}")
+
+    def change_lifepath(self, lifepath_id):
         try:
             # load new lifepath details from db
             db_lifepath = pd.read_sql_query(f"SELECT * FROM lifepaths WHERE id = '{lifepath_id}'", db)
@@ -628,8 +712,8 @@ class character:
             lifepath = row_to_dict(db_lifepath)
             self.lifepath = lifepath
             self.setting = lifepath['setting']
-            self.abilities['wealth'] = lifepath['wealth']
-            self.abilities['fame'] = lifepath['fame']
+            self.abilities['wealth']['rank'] = lifepath['wealth']
+            self.abilities['fame']['rank'] = lifepath['fame']
             self.update_stats(gameparser.parse_effects(self.lifepath['start_bonus']))
         except Exception as e:
             console.write_error(f"Error moving character to lifepath {lifepath_id}: {e}")
@@ -683,10 +767,10 @@ class character:
             for entry in db_dict:
                 result_dict[entry['id']] = entry
                 result_dict[entry['id']]['rank'] = random.randint(1,3)
-            result_dict['health'] = self.ABILITY_MAX
-            result_dict['wealth'] = self.ABILITY_MIN
-            result_dict['fame'] = self.ABILITY_MIN
-            result_dict['reputation'] = self.ABILITY_MIN
+            result_dict['health']['rank'] = self.ABILITY_MAX
+            result_dict['wealth']['rank'] = self.ABILITY_MIN
+            result_dict['fame']['rank'] = self.ABILITY_MIN
+            result_dict['reputation']['rank'] = self.ABILITY_MIN
             return result_dict
         except Exception as e:
             console.write_error(f"Error adding default values from skills table: {e}")
@@ -746,8 +830,10 @@ if __name__ == "__main__":
     # print(testchar.abilities)
     # print(testchar.traits)
     # testchar.update_stats({'pop':'poop'})
-    print(testchar.update_stats({'relationships': {'pet_dog': 1, 'miller': 1}}))
-    # print(testchar.relationships)
-    print(testchar.update_stats({'relationships': {'pet_dog': -1, 'miller': -1}}))
-    # print(testchar.relationships)
-    print(testchar.abilities)
+    console.write(testchar.update_stats({'relationships': {'pet_dog': 1}}))
+    console.write(testchar.relationships)
+    console.write(testchar.update_stats({'relationships': {'pet_dog': 'miller'}}))
+    console.write(testchar.relationships)
+    console.write(testchar.update_stats({'relationships': {'miller': -1}}))
+    console.write(testchar.relationships)
+    # print(testchar.abilities)
